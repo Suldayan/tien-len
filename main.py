@@ -1,6 +1,25 @@
-def main():
-    print("Hello world")
-    return 0
+import random
+import tkinter as tk
+from src.deck import DECK
 
-if __name__ == "__main__":
-    main()
+def main():
+    deck = DECK()
+
+    root = tk.Tk()
+    root.title("Card Demo")
+
+    canvas = tk.Canvas(root, width=800, height=600, bg="green")
+    canvas.pack()
+
+    # Draw 13 randoms cards
+    sample_cards = random.sample(deck.cards, 13)
+
+    x_position = 100
+    for card in sample_cards:
+        card.render(canvas, x_position, 500)
+        x_position += 50
+
+    root.mainloop()
+
+
+main()
