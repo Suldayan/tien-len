@@ -31,6 +31,8 @@ def test_four_of_a_kind():
     print("Four of a kind test:", is_four_of_a_kind([c1, c2, c3, c4]))
 
 def main():
+    # To run test, make sure to be in the root dir (TienLen) and run: 
+    # python -m tests.test_combo in your terminal
     test_straight()
     test_triple()
     test_pair()
