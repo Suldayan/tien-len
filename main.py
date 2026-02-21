@@ -3,16 +3,11 @@ import tkinter as tk
 from src.hands import USER_HAND
 from src.hands import BOT1_HAND
 from src.deck import DECK
-from src.distCards import DistCards
+#removed the distCards because dealing cards is now using deal() in class DECK
 
 def main():
     deck = DECK()
-
-    #amount of max cards per hand
-    cardCount = 13
-    usedList = []
-    user_List = []
-    bot1_List = []
+    deck.shuffle()
 
     root = tk.Tk()
     root.title("Card Demo")
@@ -20,9 +15,9 @@ def main():
     canvas = tk.Canvas(root, width=1200, height=1000, bg="green")
     canvas.pack()
 
-     # Distributes 13 cards from deck into user hand
-    user_cards = USER_HAND(DistCards(user_List, cardCount, deck, usedList))
-    bot1_cards = BOT1_HAND(DistCards(bot1_List, cardCount, deck, usedList))
+     # Distributes 13 cards using the deal() from class DECK 
+    user_cards = USER_HAND(deck.deal(13))
+    bot1_cards = BOT1_HAND(deck.deal(13))
 
     # Draw 13 randoms cards
     def draw_hand():
@@ -43,13 +38,12 @@ def main():
         draw_hand()
 
     arrange_button = tk.Button(root, text="Arrange", font=("Arial", 16),command=arrange_card)
-
     start_button = tk.Button(root, text="Start Game", font=("Arial", 16),command=draw_hand)
+
     canvas.create_window(600, 500, window=start_button)
 
 
     root.mainloop()
 
-
-
-main()
+if __name__ == "__main__":
+    main()
