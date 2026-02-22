@@ -35,6 +35,27 @@ def is_straight(Cards):
         counter+=1
     return True
 
+def is_double_straight(Cards):
+    Cards = sortByRankValue(Cards)
+    if len(Cards) < 6:
+        return False
+    if len(Cards) > 24:
+        return False
+    if len(Cards) % 2 != 0: #if odd number
+        return False
+    for i in range(len(Cards)):
+        if Cards[i].rank.value == 13: #2 can't be in a straight
+            return False
+    for i in range(0, len(Cards), 2): #for(int i = 0; i < length of Cards; i += 2), this only check for pair
+        if Cards[i].rank.value != Cards[i + 1].rank.value:
+            return False
+    counter = Cards[0].rank.value #set counter = to the rank value of the first pair
+    for i in range(0, len(Cards), 2):
+        if Cards[i].rank.value != counter:
+            return False
+        counter += 1
+    return True
+
 def make_combo(Cards):
     Cards = sortByRankValue(Cards)
     
