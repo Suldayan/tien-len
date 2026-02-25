@@ -1,6 +1,3 @@
-from src.hand import Hand
-from src.player import Player
-from src.deck import DECK
 class Game:
     def __init__(self, players):
         self.players = players
@@ -11,6 +8,7 @@ class Game:
         self.passed = set()            # player indices who passed this round
         self.last_player_index = None
 
+        # TODO: may be removed as the Player class by default already sets turn to False.
         #set first player's turn
         for p in self.players:
             p.set_turn(False)
