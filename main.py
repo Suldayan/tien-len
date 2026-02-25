@@ -4,6 +4,7 @@ from src.user import User
 from src.bot import Bot
 from src.hand import Hand
 from src.ui import UI
+from src.game import Game
 
 def main():
     deck = DECK()
@@ -12,10 +13,12 @@ def main():
     user = User("Demo User", Hand(deck.deal(13)))
     bot = Bot("Bot", Hand(deck.deal(13)))
 
+    game = Game([user, bot])
+
     root = tk.Tk()
     root.title("Card Demo")
 
-    ui = UI(root, user, bot)
+    ui = UI(root, game)
 
     # Start game by drawing everything
     ui.draw()

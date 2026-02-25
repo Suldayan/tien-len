@@ -2,38 +2,85 @@ class CARD:
     def __init__(self, suit, rank):
         self.suit = suit
         self.rank = rank
+        self.selected = False
 
         self.COURIER_NEW = "Courier New"
         self.TIMES_NEW_ROMAN = "Times New Roman"
 
     def __str__(self):
         return f"{self.rank} of {self.suit}"
+    
+    def toggle_selected(self):
+        self.selected = not self.selected
 
-    def render(self, canvas, x, y):
+    def render(self, canvas, x, y, click_callback=None):
         width = 100
         height = 150
 
+        # Move up if selected
+        if self.selected:
+            y -= 20
+
         color = "red" if self.suit.name in ["Hearts", "Diamonds"] else "black"
 
-        # card border
+        tag = f"card_{id(self)}"
+
+        # Card border
         canvas.create_rectangle(
             x - width//2, y - height//2,
             x + width//2, y + height//2,
             fill="white",
             outline="black",
-            width=2
+            width=2,
+            tags=tag
         )
 
-        # middle symbol
-        self.draw_text(canvas, x, y, self.suit.symbol, color, self.COURIER_NEW, 48, 0, 0)
+        # Middle symbol
+        canvas.create_text(
+            x, y,
+            text=self.suit.symbol,
+            fill=color,
+            font=(self.COURIER_NEW, 48),
+            tags=tag
+        )
 
-        # top left
-        self.draw_text(canvas, x, y, self.rank.label, color, self.TIMES_NEW_ROMAN, 18, -35, -55)
-        self.draw_text(canvas, x, y, self.suit.symbol, color, self.COURIER_NEW, 18, -35, -35)
+        # Top left
+        canvas.create_text(
+            x - 35, y - 55,
+            text=self.rank.label,
+            fill=color,
+            font=(self.TIMES_NEW_ROMAN, 18),
+            tags=tag
+        )
 
-        # bottom right
-        self.draw_text(canvas, x, y, self.rank.label, color, self.TIMES_NEW_ROMAN, 18, 35, 55)
-        self.draw_text(canvas, x, y, self.suit.symbol, color, self.COURIER_NEW, 18, 35, 35)
+        canvas.create_text(
+            x - 35, y - 35,
+            text=self.suit.symbol,
+            fill=color,
+            font=(self.COURIER_NEW, 18),
+            tags=tag
+        )
+
+        # Bottom right
+        canvas.create_text(
+            x + 35, y + 55,
+            text=self.rank.label,
+            fill=color,
+            font=(self.TIMES_NEW_ROMAN, 18),
+            tags=tag
+        )
+
+        canvas.create_text(
+            x + 35, y + 35,
+            text=self.suit.symbol,
+            fill=color,
+            font=(self.COURIER_NEW, 18),
+            tags=tag
+        )
+
+        # Bind click
+        if click_callback:
+            canvas.tag_bind(tag, "<Button-1>", lambda e: click_callback(self))
         
 
     def draw_text(self, canvas, base_x, base_y, text, color, font, size, offset_x, offset_y):

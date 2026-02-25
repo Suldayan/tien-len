@@ -1,4 +1,4 @@
-from src.combo import Combo
+from src.combo import make_combo
 
 class Hand:
     def __init__(self, cards):
@@ -14,7 +14,10 @@ class Hand:
         self.cards.append(card)
 
     def make_combo(self, selected_cards):
-        return Combo.make_combo(selected_cards)
+        return make_combo(selected_cards)
     
     def get_cards(self):
         return self.cards
+    
+    def get_selected_cards(self):
+        return [card for card in self.cards if card.selected]
