@@ -173,6 +173,7 @@ class UI:
             return
 
         card.toggle_selected()
+        print(f"Selected:", card)
         self.draw()
 
     
