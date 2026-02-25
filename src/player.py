@@ -20,4 +20,5 @@ class Player:
     def is_turn(self):
         return self.turn
     
+    
     # TODO: Create more methods here when game logic is configured (point management, turn, etc...)

@@ -4,7 +4,7 @@ class Combo:
         self.cards = cards
         self.length = length
         
-def sortByRankValue(Cards): #I used ChatGPT for this, idk how to sort stuff in python
+def sortByRankValue(Cards): 
     return sorted(Cards, key=lambda c: c.rank.value)
 
 def is_pair(Cards): #pass in a vector/array

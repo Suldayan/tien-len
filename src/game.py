@@ -1,5 +1,6 @@
 from src.hand import Hand
 from src.player import Player
+from src.deck import DECK
 class Game:
     def __init__(self, players):
         self.players = players
@@ -63,11 +64,11 @@ class Game:
         # we reset the table.
         active = [i for i, p in enumerate(self.players) if len(p.hand.get_cards()) > 0]
 
-        # if everyone active has passed, clear the table and let next player start
-        if all(i in self.passed for i in active):
-            self.start_new_round(starter_index=self.current_index)
-
-        self.next_turn()
+        #fixed : The round ends when all bots passed except the player 
+        if len(self.passed) >= len(active) - 1:
+            self.start_new_round(starter_index=self.last_player_index)
+        else:
+            self.next_turn()
 
     # --- play logic ---
     def can_play(self, combo):
@@ -88,11 +89,17 @@ class Game:
 
         if combo.combo_type in ["STRAIGHT"] and combo.length != self.current_combo.length:
             return False
+        
+        #fixed: 
+        def card_strength(c):
+            return (c.rank.value, c.suit.SuitRank)
 
-        # compare by highest rank value (assuming combo.cards is sorted by rank)
-        new_strength = max(c.rank.value for c in combo.cards)
-        old_strength = max(c.rank.value for c in self.current_combo.cards)
-        return new_strength > old_strength
+        # Find the strongest card in the new combo and the old combo
+        new_strongest_card = max(combo.cards, key=card_strength)
+        old_strongest_card = max(self.current_combo.cards, key=card_strength)
+
+        # Compare their tuple values directly
+        return card_strength(new_strongest_card) > card_strength(old_strongest_card)
 
     def play_cards(self, selected_cards):
         """
@@ -102,7 +109,7 @@ class Game:
         """
         player = self.current_player()
 
-        combo = player.hand.make_combo(selected_cards)  # uses your Hand.make_combo -> Combo.make_combo
+        combo = player.hand.make_combo(selected_cards)  # use Hand.make_combo -> Combo.make_combo
         if combo is None:
             return False, "Invalid combo"
 
@@ -116,6 +123,9 @@ class Game:
         # update table + reset passes (new action happened)
         self.current_combo = combo
         self.passed.clear()
+
+        #fixed: records the player that own the current table
+        self.last_player_index = self.current_index
 
         # if player finished, game might be over
         if len(player.hand.get_cards()) == 0:
