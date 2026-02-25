@@ -44,4 +44,3 @@ class CARD:
             fill=color,
             font=(font, size)
         )
-
