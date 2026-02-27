@@ -1,10 +1,8 @@
 import tkinter as tk
 from src.game import Game
-from src.player import Player
-
 
 class UI:
-    def __init__(self, root, game):
+    def __init__(self, root, game: Game):
         self.root = root
         self.game = game
 
@@ -165,41 +163,21 @@ class UI:
 
         self.root.after(800, self.bot_turn)
 
-
     def bot_turn(self):
-        if not self.bot.is_turn() or self.game.is_game_over():
-            return
+            if not self.bot.is_turn() or self.game.is_game_over():
+                return
 
-        hand_cards = self.bot.get_hand().get_cards()
-        # Sort so the bot plays its weakest viable card first (don't waste 2s!)
-        hand_cards.sort() 
+            selected_cards = self.bot.make_move(self.game)
 
-        played_successfully = False
+            if selected_cards:
+                self.game.play_cards(selected_cards)
+            else:
+                self.game.pass_turn()
 
-        # If table is empty, bot just plays its lowest card
-        if self.game.current_combo is None:
-            success, msg = self.game.play_cards([hand_cards[0]])
-            played_successfully = success
-            print(msg)
-        else:
-            # If table has cards, find the first (lowest) card that can beat it
-            for card in hand_cards:
-                success, msg = self.game.play_cards([card])
-                if success:
-                    played_successfully = True
-                    break
-
-        if not played_successfully:
-            print(f"{self.bot.get_name()} passes.")
-            self.game.pass_turn()
-        else:
-            print(f"{self.bot.get_name()} played a card.")
-
-        self.draw()
-
-        # If the bot is still the active player (won the round), trigger again!
-        if self.bot.is_turn() and not self.game.is_game_over():
-            self.root.after(1000, self.bot_turn)
+            self.draw()
+            
+            if self.bot.is_turn() and not self.game.is_game_over():
+                self.root.after(1000, self.bot_turn)
 
     def card_clicked(self, card):
         if not self.user.is_turn():
