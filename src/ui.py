@@ -136,6 +136,8 @@ class UI:
 
     # Arrange button function
     def arrange_cards(self):
+        for card in self.user.get_hand().get_cards():
+            card.selected = False
         self.user.get_hand().sort()
         self.draw()
 
@@ -144,6 +146,14 @@ class UI:
             return
 
         selected = self.user.get_hand().get_selected_cards()
+
+        if not selected:
+            if not self.game.has_valid_move(self.user):
+                print("No valid move. You must pass.")
+                self.game.pass_turn()
+                self.draw()
+                self.root.after(800, self.bot_turn)
+            return
         
         message = self.game.play_cards(selected)
 
@@ -156,6 +166,7 @@ class UI:
             return
 
         self.root.after(800, self.bot_turn)
+
 
 
     def pass_turn(self):
@@ -180,8 +191,21 @@ class UI:
 
             self.draw()
             
-            if self.bot.is_turn() and not self.game.is_game_over():
-                self.root.after(1000, self.bot_turn)
+            if self.game.current_player() == self.user:
+                if not self.game.has_valid_move(self.user):
+                    print("User has no valid move. Auto pass.")
+                    self.root.after(800, self.auto_pass_user)
+            else: 
+                if not self.game.is_game_over():
+                    self.root.after(1000, self.bot_turn)
+
+    def auto_pass_user(self):
+        if not self.user.is_turn():
+            return
+
+        self.game.pass_turn()
+        self.draw()
+        self.root.after(800, self.bot_turn)
 
     def card_clicked(self, card):
         if not self.user.is_turn():

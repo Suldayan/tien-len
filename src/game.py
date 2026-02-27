@@ -145,6 +145,7 @@ class Game:
 
         # remove cards from player's hand
         for c in selected_cards:
+            c.selected = False
             player.hand.remove(c)
 
         # update table + reset passes (new action happened)
@@ -165,3 +166,14 @@ class Game:
         """Game ends when only 0 or 1 players still have cards."""
         active = sum(1 for p in self.players if len(p.hand.get_cards()) > 0)
         return active <= 1
+    
+    def has_valid_move(self, player):
+        if self.current_combo is None:
+            return True
+        
+        for card in player.hand.get_cards():
+            combo = player.hand.make_combo([card])
+            if combo and self.can_play(combo):
+                return True
+        return False
+            
