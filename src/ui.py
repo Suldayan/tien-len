@@ -16,49 +16,61 @@ class UI:
         self.CARD_GAP = -40
 
         root.configure(bg="green")
-        root.minsize(400, 600)
+        root.minsize(500, 700) # Increased slightly to give the cards room to breathe
 
-        # Bot info label
-        self.bot_frame = tk.Frame(root, bg="green")
-        self.bot_frame.pack(fill="x")
-        self.bot_label = tk.Label(self.bot_frame, text="", font=("Arial", 20), bg="green", fg="white")
+        # --- TOP ZONE: Bot ---
+        self.top_frame = tk.Frame(root, bg="green")
+        self.top_frame.pack(side="top", fill="x")
+        
+        self.bot_label = tk.Label(self.top_frame, text="", font=("Arial", 20), bg="green", fg="white")
         self.bot_label.pack(pady=10)
 
-        # Bot canvas
-        self.bot_canvas = tk.Canvas(root, bg="green", highlightthickness=0, bd=0,
+        self.bot_canvas = tk.Canvas(self.top_frame, bg="green", highlightthickness=0, bd=0,
                                     height=self.CARD_HEIGHT + 40)
         self.bot_canvas.pack(fill="x", padx=10)
 
-        #middle Section to put played cards
-        #fixx: Replaced tk.Frame with tk.Canvas so we can draw on it
-        self.table_canvas = tk.Canvas(root, bg="green", highlightthickness=0, bd=0)
-        self.table_canvas.pack(fill="both", expand=True, padx=10, pady=20)
+        # --- BOTTOM ZONE: User & Controls ---
+        # We pack this BEFORE the middle table so it claims its space at the bottom first!
+        self.bottom_frame = tk.Frame(root, bg="green")
+        self.bottom_frame.pack(side="bottom", fill="x", pady=10)
 
-        # User canvas
-        self.user_canvas = tk.Canvas(root, bg="green", highlightthickness=0, bd=0,
+        # 1. Put buttons at the very bottom
+        self.controls_frame = tk.Frame(self.bottom_frame, bg="green")
+        self.controls_frame.pack(side="bottom", fill="x", pady=5)
+
+        self.arrange_button = tk.Button(self.controls_frame, text="Arrange", font=("Arial", 16), command=self.arrange_cards)
+        self.arrange_button.pack(side="left", expand=True, padx=5)
+
+        self.play_button = tk.Button(self.controls_frame, text="Play", font=("Arial", 16), command=self.play_selected)
+        self.play_button.pack(side="left", expand=True, padx=5)
+
+        self.pass_button = tk.Button(self.controls_frame, text="Pass", font=("Arial", 16), command=self.pass_turn)
+        self.pass_button.pack(side="left", expand=True, padx=5)
+
+        # 2. Put user canvas right above the buttons
+        self.user_canvas = tk.Canvas(self.bottom_frame, bg="green", highlightthickness=0, bd=0,
                                      height=self.CARD_HEIGHT + 40)
-        self.user_canvas.pack(fill="x", padx=10)
+        self.user_canvas.pack(side="bottom", fill="x", padx=10)
 
-        # User info label
-        self.user_frame = tk.Frame(root, bg="green")
-        self.user_frame.pack(fill="x")
-        self.user_label = tk.Label(self.user_frame, text="", font=("Arial", 20), bg="green", fg="white")
-        self.user_label.pack(pady=10)
+        # 3. Put user label right above their canvas
+        self.user_label = tk.Label(self.bottom_frame, text="", font=("Arial", 20), bg="green", fg="white")
+        self.user_label.pack(side="bottom", pady=10)
 
-        # Arrange button
-        self.arrange_button = tk.Button(root, text="Arrange", font=("Arial", 16), command=self.arrange_cards)
-        self.arrange_button.pack(pady=10)
-
-        # Play button
-        self.play_button = tk.Button(root, text="Play", font=("Arial", 16), command=self.play_selected)
-        self.play_button.pack(pady=5)
-
-        # Pass button
-        self.pass_button = tk.Button(root, text="Pass", font=("Arial", 16), command=self.pass_turn)
-        self.pass_button.pack(pady=5)
+        # --- MIDDLE ZONE: The Table ---
+        # Because this is packed last with expand=True, it neatly fills the gap between Top and Bottom.
+        self.table_canvas = tk.Canvas(root, bg="green", highlightthickness=0, bd=0)
+        self.table_canvas.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Redraw on resize
         root.bind("<Configure>", lambda e: self.draw())
+        
+        # --- THE KICKSTART ---
+        # Print to console so you know who the game picked to start
+        print(f"Game Started! User turn: {self.user.is_turn()} | Bot turn: {self.bot.is_turn()}")
+
+        # If the bot was given the first turn, tell it to move!
+        if self.bot.is_turn():
+            self.root.after(1000, self.bot_turn)
 
     def update_player_info(self):
         self.bot_label.config(text=f"{self.bot.get_name()} - {self.bot.get_points()} pts")
@@ -155,18 +167,38 @@ class UI:
 
 
     def bot_turn(self):
-        if not self.bot.is_turn():
+        if not self.bot.is_turn() or self.game.is_game_over():
             return
 
-        # Simple bot: try playing one card
-        for card in self.bot.get_hand().get_cards():
-            success, _ = self.game.play_cards([card])
-            if success:
-                break
+        hand_cards = self.bot.get_hand().get_cards()
+        # Sort so the bot plays its weakest viable card first (don't waste 2s!)
+        hand_cards.sort() 
+
+        played_successfully = False
+
+        # If table is empty, bot just plays its lowest card
+        if self.game.current_combo is None:
+            success, msg = self.game.play_cards([hand_cards[0]])
+            played_successfully = success
         else:
+            # If table has cards, find the first (lowest) card that can beat it
+            for card in hand_cards:
+                success, msg = self.game.play_cards([card])
+                if success:
+                    played_successfully = True
+                    break
+
+        if not played_successfully:
+            print(f"{self.bot.get_name()} passes.")
             self.game.pass_turn()
+        else:
+            print(f"{self.bot.get_name()} played a card.")
 
         self.draw()
+
+        # If the bot is still the active player (won the round), trigger again!
+        if self.bot.is_turn() and not self.game.is_game_over():
+            self.root.after(1000, self.bot_turn)
 
     def card_clicked(self, card):
         if not self.user.is_turn():
