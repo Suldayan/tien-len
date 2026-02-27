@@ -58,6 +58,9 @@ class UI:
         # Redraw on resize
         root.bind("<Configure>", lambda e: self.draw())
 
+        self.draw()
+        self.root.after(800, self.bot_turn)
+
     def update_player_info(self):
         self.bot_label.config(text=f"{self.bot.get_name()} - {self.bot.get_points()} pts")
         self.user_label.config(text=f"{self.user.get_name()} - {self.user.get_points()} pts")
@@ -156,7 +159,7 @@ class UI:
         if not self.bot.is_turn():
             return
 
-        # Simple bot: try playing one card
+        #simple bot: try playing one card
         for card in self.bot.get_hand().get_cards():
             success, _ = self.game.play_cards([card])
             if success:

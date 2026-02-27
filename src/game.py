@@ -7,7 +7,7 @@ class Game:
 
         self.round_number = 1
         self.current_combo = None      # last played combo on the table
-        self.played_cards_history = [] # A history of all played cards done by all active players.
+        self.played_cards_history = [] # a history of all played cards done by all active players.
         self.passed = set()            # player indices who passed this round
         self.last_player_index = None
         self.set_first_turn()
@@ -85,8 +85,7 @@ class Game:
         """Current player passes. If everyone else passed, new round starts."""
         self.passed.add(self.current_index)
 
-        # If all *active* players (with cards) have passed except the last player who played,
-        # we reset the table.
+        # If all ative players have passed except the last player who played, we reset the table.
         active = [i for i, p in enumerate(self.players) if len(p.hand.get_cards()) > 0]
 
         #fixed : The round ends when all bots passed except the player 
@@ -97,12 +96,11 @@ class Game:
 
     # --- play logic ---
     def can_play(self, combo):
-        """
-        Very basic rule:
-        - If table is empty: any valid combo can be played
-        - Otherwise: must match type and (for straight) length, and have higher top rank
-        You can expand this later for Tien Len rules (bombs, 2, etc.).
-        """
+        
+        #Very basic rule:
+        #If table is empty: any valid combo can be played
+        #Otherwise: must match type and (for straight) length, and have higher top rank
+        #You can expand this later for Tien Len rules (bombs, 2, etc.).
         if combo is None:
             return False
 
@@ -119,7 +117,7 @@ class Game:
         def card_strength(c):
             return (c.rank.value, c.suit.SuitRank)
 
-        # Find the strongest card in the new combo and the old combo
+        # find the strongest card in the new combo and the old combo
         new_strongest_card = max(combo.cards, key=card_strength)
         old_strongest_card = max(self.current_combo.cards, key=card_strength)
 
@@ -127,11 +125,10 @@ class Game:
         return card_strength(new_strongest_card) > card_strength(old_strongest_card)
 
     def play_cards(self, selected_cards):
-        """
-        selected_cards: list of CARD objects that current player wants to play
+    
+        #selected_cards: list of CARD objects that current player wants to play
 
-        Returns (True, message) if played, else (False, reason)
-        """
+        #Returns (True, message) if played, else (False, reason)
         player = self.current_player()
 
         combo = player.hand.make_combo(selected_cards)  # use Hand.make_combo -> Combo.make_combo
