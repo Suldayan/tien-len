@@ -1,18 +1,20 @@
+from src.player import Player
+
 class Game:
-    def __init__(self, players):
+    def __init__(self, players: list[Player]):
         self.players = players
         self.current_index = 0
 
         self.round_number = 1
         self.current_combo = None      # last played combo on the table
+        self.played_cards_history = [] # A history of all played cards done by all active players.
         self.passed = set()            # player indices who passed this round
         self.last_player_index = None
+        self.set_first_turn()
 
-        # TODO: may be removed as the Player class by default already sets turn to False.
-        #set first player's turn
-        for p in self.players:
-            p.set_turn(False)
-        self.players[self.current_index].set_turn(True)
+    def set_first_turn(self):
+        # Set the first initialized player to go first
+        self.players[0].set_turn(True)
 
     #turn helpers 
     def current_player(self):
@@ -113,6 +115,10 @@ class Game:
 
         if not self.can_play(combo):
             return False, "Combo does not beat the current table"
+
+        # Add hand to play into history
+        self.played_cards_history.append(combo)
+        print("Added combo into histroy")
 
         # remove cards from player's hand
         for c in selected_cards:

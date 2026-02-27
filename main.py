@@ -13,7 +13,9 @@ def main():
     user = User("Demo User", Hand(deck.deal(13)))
     bot = Bot("Bot", Hand(deck.deal(13)))
 
-    game = Game([user, bot])
+    game = Game([bot, user])
+    game.set_first_turn()
+    game.start_new_round()
 
     root = tk.Tk()
     root.title("Card Demo")
