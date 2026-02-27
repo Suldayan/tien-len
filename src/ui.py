@@ -1,6 +1,5 @@
 import tkinter as tk
 from src.game import Game
-from src.player import Player
 
 class UI:
     def __init__(self, root, game: Game):
@@ -129,8 +128,8 @@ class UI:
             return
 
         selected = self.user.get_hand().get_selected_cards()
-
-        success, message = self.game.play_cards(selected)
+        
+        message = self.game.play_cards(selected)
 
         print(message)
 
