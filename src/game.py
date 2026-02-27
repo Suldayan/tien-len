@@ -1,18 +1,45 @@
+from src.player import Player
+
 class Game:
-    def __init__(self, players):
+    def __init__(self, players: list[Player]):
         self.players = players
         self.current_index = 0
 
         self.round_number = 1
         self.current_combo = None      # last played combo on the table
+        self.played_cards_history = [] # A history of all played cards done by all active players.
         self.passed = set()            # player indices who passed this round
         self.last_player_index = None
+        self.set_first_turn()
 
-        # TODO: may be removed as the Player class by default already sets turn to False.
-        #set first player's turn
-        for p in self.players:
-            p.set_turn(False)
+    def set_first_turn(self):
+        # Initialize variables to track the absolute lowest card found across all players
+        absolute_lowest_card = None
+        player_with_lowest = None
+
+        for i, player in enumerate(self.players):
+            # Sort the player's hand to find their specific lowest card
+            player_cards = player.hand.get_cards()
+            if not player_cards:
+                continue
+                
+            players_lowest = min(player_cards)
+
+            if players_lowest.rank.label == "3" and players_lowest.suit.name == "Spades":
+                self.current_index = i
+                player.set_turn(True)
+                print(f"Starter found: {player.get_name()} has the 3 of Spades!")
+                return
+
+            # If 3 of spades is not available, keep track of who has the overall lowest card
+            if absolute_lowest_card is None or players_lowest < absolute_lowest_card:
+                absolute_lowest_card = players_lowest
+                player_with_lowest = i
+
+        # If we get here, no one had the 3 of Spades
+        self.current_index = player_with_lowest
         self.players[self.current_index].set_turn(True)
+        print(f"No 3 of Spades. {self.players[self.current_index].get_name()} starts with {absolute_lowest_card}")
 
     #turn helpers 
     def current_player(self):
@@ -113,6 +140,10 @@ class Game:
 
         if not self.can_play(combo):
             return False, "Combo does not beat the current table"
+
+        # Add hand to play into history
+        self.played_cards_history.append(combo)
+        print("Added combo into histroy")
 
         # remove cards from player's hand
         for c in selected_cards:

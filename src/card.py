@@ -1,11 +1,28 @@
+from src.suit import SUIT
+from src.rank import RANK
+
 class CARD:
-    def __init__(self, suit, rank):
+    def __init__(self, suit: SUIT, rank: RANK):
         self.suit = suit
         self.rank = rank
         self.selected = False
 
         self.COURIER_NEW = "Courier New"
         self.TIMES_NEW_ROMAN = "Times New Roman"
+
+    def __lt__(self, other):
+        # Compare rank first
+        if self.rank.value != other.rank.value:
+            return self.rank.value < other.rank.value
+
+        # If ranks are equal, compare suit rank
+        return self.suit.SuitRank < other.suit.SuitRank
+
+    def __eq__(self, other):
+        return (
+            self.rank.value == other.rank.value and
+            self.suit.SuitRank == other.suit.SuitRank
+        )
 
     def __str__(self):
         return f"{self.rank} of {self.suit}"

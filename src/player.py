@@ -1,5 +1,7 @@
+from src.hand import Hand
+
 class Player:
-    def __init__(self, name, hand, points=0):
+    def __init__(self, name, hand: Hand, points=0):
         self.hand = hand
         self.name = name
         self.points = points

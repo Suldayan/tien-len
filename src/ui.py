@@ -180,6 +180,7 @@ class UI:
         if self.game.current_combo is None:
             success, msg = self.game.play_cards([hand_cards[0]])
             played_successfully = success
+            print(msg)
         else:
             # If table has cards, find the first (lowest) card that can beat it
             for card in hand_cards:
