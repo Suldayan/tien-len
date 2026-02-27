@@ -2,9 +2,8 @@ import tkinter as tk
 from src.game import Game
 from src.player import Player
 
-
 class UI:
-    def __init__(self, root, game):
+    def __init__(self, root, game: Game):
         self.root = root
         self.game = game
 
