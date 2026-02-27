@@ -101,7 +101,7 @@ class Game:
         Very basic rule:
         - If table is empty: any valid combo can be played
         - Otherwise: must match type and (for straight) length, and have higher top rank
-        You can expand this later for Tien Len rules (bombs, 2, etc.).
+        expand this later for Tien Len rules (bombs, 2, etc.).
         """
         if combo is None:
             return False
