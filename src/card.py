@@ -1,5 +1,8 @@
+from src.suit import SUIT
+from src.rank import RANK
+
 class CARD:
-    def __init__(self, suit, rank):
+    def __init__(self, suit: SUIT, rank: RANK):
         self.suit = suit
         self.rank = rank
         self.selected = False
