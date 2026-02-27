@@ -58,6 +58,7 @@ class UI:
         # Redraw on resize
         root.bind("<Configure>", lambda e: self.draw())
 
+        #added these two line so bot can start after delay 0.8sec
         self.draw()
         self.root.after(800, self.bot_turn)
 
