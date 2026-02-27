@@ -22,5 +22,11 @@ class Player:
     def is_turn(self):
         return self.turn
     
+    def make_move(self, game):
+        """
+        Decision-making method to be overridden by subclasses.
+        Should return a list of CARD objects or None to pass.
+        """
+        raise NotImplementedError("Subclasses must implement make_move")
     
     # TODO: Create more methods here when game logic is configured (point management, turn, etc...)

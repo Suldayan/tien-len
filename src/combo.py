@@ -1,5 +1,7 @@
+from src.card import CARD
+
 class Combo:
-    def __init__(self, combo_type, cards, length):
+    def __init__(self, combo_type, cards: list[CARD], length):
         self.combo_type = combo_type
         self.cards = cards
         self.length = length

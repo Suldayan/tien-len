@@ -7,7 +7,7 @@ class Game:
 
         self.round_number = 1
         self.current_combo = None      # last played combo on the table
-        self.played_cards_history = [] # a history of all played cards done by all active players.
+        self.played_cards_history = [] # A history of all played cards done by all active players.
         self.passed = set()            # player indices who passed this round
         self.last_player_index = None
         self.set_first_turn()
@@ -96,11 +96,12 @@ class Game:
 
     # --- play logic ---
     def can_play(self, combo):
-        
-        #Very basic rule:
-        #If table is empty: any valid combo can be played
-        #Otherwise: must match type and (for straight) length, and have higher top rank
-        #You can expand this later for Tien Len rules (bombs, 2, etc.).
+        """
+        Very basic rule:
+        - If table is empty: any valid combo can be played
+        - Otherwise: must match type and (for straight) length, and have higher top rank
+        expand this later for Tien Len rules (bombs, 2, etc.).
+        """
         if combo is None:
             return False
 
