@@ -13,8 +13,33 @@ class Game:
         self.set_first_turn()
 
     def set_first_turn(self):
-        # Set the first initialized player to go first
-        self.players[0].set_turn(True)
+        # Initialize variables to track the absolute lowest card found across all players
+        absolute_lowest_card = None
+        player_with_lowest = None
+
+        for i, player in enumerate(self.players):
+            # Sort the player's hand to find their specific lowest card
+            player_cards = player.hand.get_cards()
+            if not player_cards:
+                continue
+                
+            players_lowest = min(player_cards)
+
+            if players_lowest.rank.label == "3" and players_lowest.suit.name == "Spades":
+                self.current_index = i
+                player.set_turn(True)
+                print(f"Starter found: {player.get_name()} has the 3 of Spades!")
+                return
+
+            # If 3 of spades is not available, keep track of who has the overall lowest card
+            if absolute_lowest_card is None or players_lowest < absolute_lowest_card:
+                absolute_lowest_card = players_lowest
+                player_with_lowest = i
+
+        # If we get here, no one had the 3 of Spades
+        self.current_index = player_with_lowest
+        self.players[self.current_index].set_turn(True)
+        print(f"No 3 of Spades. {self.players[self.current_index].get_name()} starts with {absolute_lowest_card}")
 
     #turn helpers 
     def current_player(self):
