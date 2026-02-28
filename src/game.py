@@ -176,4 +176,22 @@ class Game:
             if combo and self.can_play(combo):
                 return True
         return False
+    
+    #Called when game's over. Updates points + returns winner
+    def end_match(self):
+        winner = None
+        loser = None
+
+        for player in self.players:
+            if len(player.hand.get_cards()) == 0:
+                winner = player
+            else:
+                loser = player
+        
+        if winner and loser:
+            remaining_cards = len(loser.hand.get_cards())
+            winner.points += remaining_cards*10
+            loser.points -= remaining_cards*10
+        
+        return winner, loser
             
