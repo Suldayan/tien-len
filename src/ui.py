@@ -1,5 +1,6 @@
 import tkinter as tk
 from src.game import Game
+from tkinter import messagebox
 
 class UI:
     def __init__(self, root, game: Game):
@@ -162,11 +163,10 @@ class UI:
         self.draw()
 
         if self.game.is_game_over():
-            print("Game Over")
+            self.handle_game_over()
             return
 
         self.root.after(800, self.bot_turn)
-
 
 
     def pass_turn(self):
@@ -215,4 +215,21 @@ class UI:
         print(f"Selected:", card)
         self.draw()
 
+    def handle_game_over(self):
+        winner, loser = self.game.end_match()
+
+        if winner:
+            message = (
+                f"Congratulations, {winner.get_name()}!\nYou win :)\n\n"
+                f"{winner.get_name()}'s points: {winner.get_points()}\n"
+                f"{loser.get_name()}'s points: {loser.get_points()}"
+            )
+        else: 
+            message = "Game over"
+
+        play_again = messagebox.askyesno("Match Result", message + "\n\nWanna play again?")
+        if play_again:
+            self.reset_game()
+        else:
+            self.root.destroy()
     
