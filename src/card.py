@@ -27,6 +27,9 @@ class CARD:
     def __str__(self):
         return f"{self.rank} of {self.suit}"
     
+    def __repr__(self): 
+        return f"{self.rank.label}{self.suit.symbol}"
+    
     def toggle_selected(self):
         self.selected = not self.selected
 

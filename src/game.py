@@ -181,7 +181,7 @@ class Game:
 
         # Add hand to play into history
         self.played_cards_history.append(combo)
-        print("Added combo into histroy")
+        print(f"Added combo: {combo} into history")
 
         # remove cards from player's hand
         for c in selected_cards:

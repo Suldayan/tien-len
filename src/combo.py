@@ -5,6 +5,9 @@ class Combo:
         self.combo_type = combo_type
         self.cards = cards
         self.length = length
+    
+    def __repr__(self): 
+        return f"{self.combo_type}: {self.cards}"
         
 def sortByRankValue(Cards): 
     return sorted(Cards, key=lambda c: c.rank.value)
@@ -65,6 +68,7 @@ def make_combo(Cards):
         return Combo("SINGLE", Cards, 1)
 
     if is_pair(Cards):
+        print(f"Making combo of pair:", Cards)
         return Combo("PAIR", Cards, 2)
 
     if is_triple(Cards):
