@@ -1,5 +1,6 @@
 import tkinter as tk
 from src.game import Game
+from tkinter import messagebox
 
 class UI:
     def __init__(self, root, game: Game):
@@ -70,6 +71,10 @@ class UI:
         if self.bot.is_turn():
             self.root.after(1000, self.bot_turn)
 
+        #added these two line so bot can start after delay 0.8sec
+        self.draw()
+        self.root.after(800, self.bot_turn)
+
     def update_player_info(self):
         self.bot_label.config(text=f"{self.bot.get_name()} - {self.bot.get_points()} pts")
         self.user_label.config(text=f"{self.user.get_name()} - {self.user.get_points()} pts")
@@ -132,6 +137,8 @@ class UI:
 
     # Arrange button function
     def arrange_cards(self):
+        for card in self.user.get_hand().get_cards():
+            card.selected = False
         self.user.get_hand().sort()
         self.draw()
 
@@ -141,14 +148,22 @@ class UI:
 
         selected = self.user.get_hand().get_selected_cards()
 
-        success, message = self.game.play_cards(selected)
+        if not selected:
+            if not self.game.has_valid_move(self.user):
+                print("No valid move. You must pass.")
+                self.game.pass_turn()
+                self.draw()
+                self.root.after(800, self.bot_turn)
+            return
+        
+        message = self.game.play_cards(selected)
 
         print(message)
 
         self.draw()
 
         if self.game.is_game_over():
-            print("Game Over")
+            self.handle_game_over()
             return
 
         self.root.after(800, self.bot_turn)
@@ -176,14 +191,45 @@ class UI:
 
             self.draw()
             
-            if self.bot.is_turn() and not self.game.is_game_over():
-                self.root.after(1000, self.bot_turn)
+            if self.game.current_player() == self.user:
+                if not self.game.has_valid_move(self.user):
+                    print("User has no valid move. Auto pass.")
+                    self.root.after(800, self.auto_pass_user)
+            else: 
+                if not self.game.is_game_over():
+                    self.root.after(1000, self.bot_turn)
+
+    def auto_pass_user(self):
+        if not self.user.is_turn():
+            return
+
+        self.game.pass_turn()
+        self.draw()
+        self.root.after(800, self.bot_turn)
 
     def card_clicked(self, card):
         if not self.user.is_turn():
             return
 
         card.toggle_selected()
+        print(f"Selected:", card)
         self.draw()
 
+    def handle_game_over(self):
+        winner, loser = self.game.end_match()
+
+        if winner:
+            message = (
+                f"Congratulations, {winner.get_name()}!\nYou win :)\n\n"
+                f"{winner.get_name()}'s points: {winner.get_points()}\n"
+                f"{loser.get_name()}'s points: {loser.get_points()}"
+            )
+        else: 
+            message = "Game over"
+
+        play_again = messagebox.askyesno("Match Result", message + "\n\nWanna play again?")
+        if play_again:
+            self.reset_game()
+        else:
+            self.root.destroy()
     

@@ -85,8 +85,7 @@ class Game:
         """Current player passes. If everyone else passed, new round starts."""
         self.passed.add(self.current_index)
 
-        # If all *active* players (with cards) have passed except the last player who played,
-        # we reset the table.
+        # If all ative players have passed except the last player who played, we reset the table.
         active = [i for i, p in enumerate(self.players) if len(p.hand.get_cards()) > 0]
 
         #fixed : The round ends when all bots passed except the player 
@@ -167,11 +166,10 @@ class Game:
         return card_strength(player_strongest_card) > card_strength(pot_strongest_card)
 
     def play_cards(self, selected_cards):
-        """
-        selected_cards: list of CARD objects that current player wants to play
+    
+        #selected_cards: list of CARD objects that current player wants to play
 
-        Returns (True, message) if played, else (False, reason)
-        """
+        #Returns (True, message) if played, else (False, reason)
         player = self.current_player()
 
         combo = player.hand.make_combo(selected_cards)  # use Hand.make_combo -> Combo.make_combo
@@ -187,6 +185,7 @@ class Game:
 
         # remove cards from player's hand
         for c in selected_cards:
+            c.selected = False
             player.hand.remove(c)
 
         # update table + reset passes (new action happened)
@@ -207,3 +206,32 @@ class Game:
         """Game ends when only 0 or 1 players still have cards."""
         active = sum(1 for p in self.players if len(p.hand.get_cards()) > 0)
         return active <= 1
+    
+    def has_valid_move(self, player):
+        if self.current_combo is None:
+            return True
+        
+        for card in player.hand.get_cards():
+            combo = player.hand.make_combo([card])
+            if combo and self.can_play(combo):
+                return True
+        return False
+    
+    #Called when game's over. Updates points + returns winner
+    def end_match(self):
+        winner = None
+        loser = None
+
+        for player in self.players:
+            if len(player.hand.get_cards()) == 0:
+                winner = player
+            else:
+                loser = player
+        
+        if winner and loser:
+            remaining_cards = len(loser.hand.get_cards())
+            winner.points += remaining_cards*10
+            loser.points -= remaining_cards*10
+        
+        return winner, loser
+            

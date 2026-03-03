@@ -1,8 +1,12 @@
+from src.card import CARD
 from src.combo import make_combo
 
 class Hand:
-    def __init__(self, cards):
+    def __init__(self, cards: list[CARD]):
         self.cards = cards
+
+    def __iter__(self):
+        return iter(self.cards)
 
     def sort(self):
         self.cards.sort(key=lambda c: (c.rank.value, c.suit.SuitRank))
