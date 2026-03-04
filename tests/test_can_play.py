@@ -1,16 +1,10 @@
-import tkinter as tk
-from src.deck import DECK
-from src.user import User
-from src.bot import Bot
-from src.hand import Hand
-from src.ui import UI
-from src.game import Game
 from src.card import CARD
 from src.suit import SUIT
 from src.rank import RANK
 from src.combo import Combo
-from src.combo import is_straight, is_triple, is_pair, is_four_of_a_kind, is_double_straight, make_combo
-def can_play(pot, combo):
+from src.combo import make_combo
+
+def can_play(pot, combo: Combo):
         """
         Very basic rule:
         - If table is empty: any valid combo can be played
