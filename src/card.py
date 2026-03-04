@@ -2,6 +2,9 @@ from src.suit import SUIT
 from src.rank import RANK
 
 class CARD:
+    WIDTH = 80
+    HEIGHT = 120
+
     def __init__(self, suit: SUIT, rank: RANK):
         self.suit = suit
         self.rank = rank
@@ -31,8 +34,9 @@ class CARD:
         self.selected = not self.selected
 
     def render(self, canvas, x, y, click_callback=None):
-        width = 100
-        height = 150
+        width = self.WIDTH
+        height = self.HEIGHT
+
 
         # Move up if selected
         if self.selected:

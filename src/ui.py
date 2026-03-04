@@ -10,9 +10,12 @@ class UI:
         self.user = game.players[0]
         self.bot = game.players[1]
 
-        self.CARD_WIDTH = 100
-        self.CARD_HEIGHT = 150
+        from src.card import CARD
+        
+        self.CARD_WIDTH = CARD.WIDTH
+        self.CARD_HEIGHT = CARD.HEIGHT
         self.CARD_GAP = -40
+
 
         root.configure(bg="green")
         root.minsize(500, 700) # Increased slightly to give the cards room to breathe
@@ -26,7 +29,7 @@ class UI:
 
         self.bot_canvas = tk.Canvas(self.top_frame, bg="green", highlightthickness=0, bd=0,
                                     height=self.CARD_HEIGHT + 40)
-        self.bot_canvas.pack(fill="x", padx=10)
+        self.bot_canvas.pack(fill="both", expand=True, padx=10)
 
         # --- BOTTOM ZONE: User & Controls ---
         # We pack this BEFORE the middle table so it claims its space at the bottom first!
@@ -49,7 +52,7 @@ class UI:
         # 2. Put user canvas right above the buttons
         self.user_canvas = tk.Canvas(self.bottom_frame, bg="green", highlightthickness=0, bd=0,
                                      height=self.CARD_HEIGHT + 40)
-        self.user_canvas.pack(side="bottom", fill="x", padx=10)
+        self.user_canvas.pack(fill="both", expand=True, padx=10)
 
         # 3. Put user label right above their canvas
         self.user_label = tk.Label(self.bottom_frame, text="", font=("Arial", 20), bg="green", fg="white")
@@ -61,7 +64,7 @@ class UI:
         self.table_canvas.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Redraw on resize
-        root.bind("<Configure>", lambda e: self.draw())
+        root.bind("<Configure>", lambda e: (self.auto_scale_cards(), self.draw()))
         
         # --- THE KICKSTART ---
         # Print to console so you know who the game picked to start
@@ -99,7 +102,52 @@ class UI:
             if canvas == self.user_canvas:
                 card.render(canvas, x, y, click_callback=self.card_clicked)
             else:
-                card.render(canvas, x, y)
+                self.render_back(canvas, x, y)
+
+    def render_back(self, canvas, x, y):
+     width = self.CARD_WIDTH
+     height = self.CARD_HEIGHT
+
+
+    # Draw card background
+     canvas.create_rectangle(
+        x - width//2, y - height//2,
+        x + width//2, y + height//2,
+        fill="#1E3A8A",   # deep blue
+        outline="white",
+        width=3
+    )
+
+    # Optional: add a pattern or symbol
+     canvas.create_text(
+        x, y,
+        text="★",
+        fill="white",
+        font=("Arial", 40)
+    )
+    def auto_scale_cards(self):\
+    
+        canvas_width = self.user_canvas.winfo_width()
+        num_cards = len(self.user.get_hand().get_cards())
+        if num_cards == 0:
+          return
+    # Minimum and maximum card sizes 
+        MAX_W, MAX_H = 100, 150
+        MIN_W, MIN_H = 50, 75
+    # Compute ideal width so all cards fit
+    # take 30% overlap
+        ideal_width = canvas_width / (num_cards * 0.7)
+
+    # Clamp width between min and max
+        new_width = max(MIN_W, min(MAX_W, ideal_width))
+        new_height = new_width * 1.5  # keep 2:3 ratio
+
+    # Update UI card size
+        self.CARD_WIDTH = int(new_width)
+        self.CARD_HEIGHT = int(new_height)
+
+    # Overlap gap (negative)
+        self.CARD_GAP = int(-self.CARD_WIDTH * 0.4)
 
     def draw(self):
         self.update_player_info()
