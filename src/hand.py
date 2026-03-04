@@ -23,5 +23,8 @@ class Hand:
     def get_cards(self):
         return self.cards
     
+    def set_cards(self, cards):
+        self.cards = cards
+    
     def get_selected_cards(self):
         return [card for card in self.cards if card.selected]
