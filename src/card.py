@@ -30,7 +30,6 @@ class CARD:
     def toggle_selected(self):
         self.selected = not self.selected
 
-    
 
     def render(self, canvas, x, y, click_callback=None):
         width = 100
