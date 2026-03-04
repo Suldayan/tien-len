@@ -1,11 +1,13 @@
 import tkinter as tk
 from src.game import Game
+from src.deck import DECK
 from tkinter import messagebox
 
 class UI:
-    def __init__(self, root, game: Game):
+    def __init__(self, root, game: Game, deck: DECK):
         self.root = root
         self.game = game
+        self.deck = deck
 
         self.user = game.players[0]
         self.bot = game.players[1]
@@ -153,6 +155,8 @@ class UI:
 
         self.game.play_cards(selected)
         self.draw()
+        if self.check_game_over():
+            return
         self.root.after(800, self.advance_turn)
 
     def pass_turn(self):
@@ -161,6 +165,8 @@ class UI:
 
         self.game.pass_turn()
         self.draw()
+        if self.check_game_over():
+            return
         self.root.after(800, self.advance_turn)
 
     def bot_turn(self):
@@ -175,6 +181,8 @@ class UI:
             self.game.pass_turn()
 
         self.draw()
+        if self.check_game_over():
+            return
         self.root.after(800, self.advance_turn)
 
     def advance_turn(self):
@@ -218,6 +226,15 @@ class UI:
         else:
             self.root.destroy()
 
+    def check_game_over(self):
+        """Call after any play or pass. Returns True if game ended."""
+        if self.game.is_game_over():
+            self.handle_game_over()
+            return True
+        return False
+
     def reset_game(self):
-        # TODO: implement 
-        pass
+        self.game.reset(self.deck)
+        self.draw()
+        if self.bot.is_turn():
+            self.root.after(800, self.bot_turn)

@@ -244,4 +244,20 @@ class Game:
         for player in self.players:
             lines.append(f"{player.get_name()}: {player.get_points()} pts")
         return "\n".join(lines)
+    
+    def reset(self, deck):
+        deck.reset()
+        deck.shuffle()
+
+        for player in self.players:
+            player.hand.set_cards(deck.deal(13))
+            player.set_turn(False)
+            player.set_points(0)
+
+        self.current_combo = None
+        self.passed.clear()
+        self.played_cards_history = []
+        self.last_player_index = None
+        self.round_number = 1
+        self.set_first_turn()
                     
