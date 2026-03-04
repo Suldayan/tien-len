@@ -106,10 +106,10 @@ class UI:
         self.draw_cards(self.bot_canvas, self.bot.get_hand().get_cards())
         self.draw_cards(self.user_canvas, self.user.get_hand().get_cards())
         #fixed: always clear the middle table before redrawing
-        self.table_canvas.delete("all") 
+        self.table_canvas.delete("all")
 
         if self.game.current_combo:
-            #fixed: target the  middle canvas instead of bot_canvas
+            #fixed: target the middle canvas instead of bot_canvas
             self.table_canvas.update_idletasks()
 
             width = self.table_canvas.winfo_width()
@@ -117,15 +117,15 @@ class UI:
 
             cards = self.game.current_combo.cards
 
-            #spacing for played cards on the table 
+            #spacing for played cards on the table
             played_card_spacing = 60
 
             #calculate total width of the played group
-            #cassuming render draws from center x
+            #assuming render draws from center x
             if len(cards) > 1:
-                 total_group_width = (len(cards) - 1) * played_card_spacing
+                total_group_width = (len(cards) - 1) * played_card_spacing
             else:
-                 total_group_width = 0
+                total_group_width = 0
 
             start_x = (width // 2) - (total_group_width // 2)
             center_y = height // 2
@@ -149,25 +149,11 @@ class UI:
         selected = self.user.get_hand().get_selected_cards()
 
         if not selected:
-            if not self.game.has_valid_move(self.user):
-                print("No valid move. You must pass.")
-                self.game.pass_turn()
-                self.draw()
-                self.root.after(800, self.bot_turn)
             return
-        
-        message = self.game.play_cards(selected)
 
-        print(message)
-
+        self.game.play_cards(selected)
         self.draw()
-
-        if self.game.is_game_over():
-            self.handle_game_over()
-            return
-
-        self.root.after(800, self.bot_turn)
-
+        self.root.after(800, self.advance_turn)
 
     def pass_turn(self):
         if not self.user.is_turn():
@@ -175,37 +161,46 @@ class UI:
 
         self.game.pass_turn()
         self.draw()
-
-        self.root.after(800, self.bot_turn)
+        self.root.after(800, self.advance_turn)
 
     def bot_turn(self):
-            if not self.bot.is_turn() or self.game.is_game_over():
-                return
-
-            selected_cards = self.bot.make_move(self.game)
-
-            if selected_cards:
-                self.game.play_cards(selected_cards)
-            else:
-                self.game.pass_turn()
-
-            self.draw()
-            
-            if self.game.current_player() == self.user:
-                if not self.game.has_valid_move(self.user):
-                    print("User has no valid move. Auto pass.")
-                    self.root.after(800, self.auto_pass_user)
-            else: 
-                if not self.game.is_game_over():
-                    self.root.after(1000, self.bot_turn)
-
-    def auto_pass_user(self):
-        if not self.user.is_turn():
+        if not self.bot.is_turn() or self.game.is_game_over():
             return
 
+        selected_cards = self.bot.make_move(self.game)
+
+        if selected_cards:
+            self.game.play_cards(selected_cards)
+        else:
+            self.game.pass_turn()
+
+        self.draw()
+        self.root.after(800, self.advance_turn)
+
+    def advance_turn(self):
+        """Single choke point: decides what happens after any play or pass."""
+        if self.game.is_game_over():
+            self.handle_game_over()
+            return
+
+        current = self.game.current_player()
+
+        if not self.game.has_valid_move(current):
+            # Whoever is stuck gets auto-passed, bot or user
+            self.root.after(800, lambda: self.auto_pass(current))
+        elif current == self.bot:
+            self.root.after(800, self.bot_turn)
+        # else: user's turn — just wait for their input
+
+    def auto_pass(self, player):
+        """Automatically passes for any player with no valid moves."""
+        if not player.is_turn():
+            return
+
+        print(f"{player.get_name()} has no valid move. Auto pass.")
         self.game.pass_turn()
         self.draw()
-        self.root.after(800, self.bot_turn)
+        self.root.after(800, self.advance_turn)
 
     def card_clicked(self, card):
         if not self.user.is_turn():
@@ -216,20 +211,13 @@ class UI:
         self.draw()
 
     def handle_game_over(self):
-        winner, loser = self.game.end_match()
-
-        if winner:
-            message = (
-                f"Congratulations, {winner.get_name()}!\nYou win :)\n\n"
-                f"{winner.get_name()}'s points: {winner.get_points()}\n"
-                f"{loser.get_name()}'s points: {loser.get_points()}"
-            )
-        else: 
-            message = "Game over"
-
+        message = self.game.round_results()
         play_again = messagebox.askyesno("Match Result", message + "\n\nWanna play again?")
         if play_again:
             self.reset_game()
         else:
             self.root.destroy()
-    
+
+    def reset_game(self):
+        # TODO: implement 
+        pass

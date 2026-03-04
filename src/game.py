@@ -220,18 +220,28 @@ class Game:
     #Called when game's over. Updates points + returns winner
     def end_match(self):
         winner = None
-        loser = None
+        losers = []
 
         for player in self.players:
             if len(player.hand.get_cards()) == 0:
                 winner = player
             else:
-                loser = player
-        
-        if winner and loser:
-            remaining_cards = len(loser.hand.get_cards())
-            winner.points += remaining_cards*10
-            loser.points -= remaining_cards*10
-        
-        return winner, loser
-            
+                losers.append(player)
+
+        if winner:
+            for loser in losers:
+                remaining = len(loser.hand.get_cards())
+                winner.points += remaining * 10
+                loser.points -= remaining * 10
+
+        return winner
+
+    def round_results(self):
+        winner = self.end_match()
+        lines = []
+        lines.append(f"Congratulations, {winner.get_name()}! You win :)" if winner else "Game Over")
+        lines.append("")
+        for player in self.players:
+            lines.append(f"{player.get_name()}: {player.get_points()} pts")
+        return "\n".join(lines)
+                    
