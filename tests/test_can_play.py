@@ -3,7 +3,6 @@ from src.suit import SUIT
 from src.rank import RANK
 from src.combo import Combo
 from src.combo import make_combo
-
 def can_play(pot, combo: Combo):
         """
         Very basic rule:
@@ -80,6 +79,15 @@ def can_play(pot, combo: Combo):
         # Compare their tuple values directly
         return card_strength(player_strongest_card) > card_strength(pot_strongest_card)
 def main():
+    """
+    To run the test, make sure you are in the project root directory (TienLen).
+    On Windows:
+        python -m tests.test_can_play
+    On macOS / Linux:
+        python3 -m tests.test_can_play
+    """
+
+
     #test pot = 2, player = four of a kind
     c2 = CARD(SUIT("Spades", 1, "♠"), RANK("TWO", 13, "2"))
     cards1 = [c2]
