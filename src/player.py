@@ -18,6 +18,9 @@ class Player:
     
     def set_turn(self, turn: bool):
         self.turn = turn
+
+    def set_points(self, points):
+        self.points = points
     
     def is_turn(self):
         return self.turn
