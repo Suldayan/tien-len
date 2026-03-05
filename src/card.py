@@ -2,8 +2,8 @@ from src.suit import SUIT
 from src.rank import RANK
 
 class CARD:
-    WIDTH = 80
-    HEIGHT = 120
+    WIDTH = 100
+    HEIGHT = 150
 
     def __init__(self, suit: SUIT, rank: RANK):
         self.suit = suit
@@ -67,38 +67,45 @@ class CARD:
             font=(self.COURIER_NEW, 48),
             tags=tag
         )
+        #Dynamic font size offset
+        rank_font = int(height*0.15)
+        suit_font = int(height*0.15)
+        #Dynamic scaling_offset 
+        ox = width * 0.35
+        oy1 = height * 0.2
+        oy2 = height *0.35
 
         # Top left
         canvas.create_text(
-            x - 35, y - 55,
+            x - ox, y - oy2,
             text=self.rank.label,
             fill=color,
-            font=(self.TIMES_NEW_ROMAN, 18),
+            font=(self.TIMES_NEW_ROMAN, rank_font),
             tags=tag
         )
 
         canvas.create_text(
-            x - 35, y - 35,
+            x - ox, y - oy1,
             text=self.suit.symbol,
             fill=color,
-            font=(self.COURIER_NEW, 18),
+            font=(self.COURIER_NEW, suit_font),
             tags=tag
         )
 
         # Bottom right
         canvas.create_text(
-            x + 35, y + 55,
+            x + ox, y + oy2,
             text=self.rank.label,
             fill=color,
-            font=(self.TIMES_NEW_ROMAN, 18),
+            font=(self.TIMES_NEW_ROMAN, rank_font),
             tags=tag
         )
 
         canvas.create_text(
-            x + 35, y + 35,
+            x + ox, y + oy1,
             text=self.suit.symbol,
             fill=color,
-            font=(self.COURIER_NEW, 18),
+            font=(self.COURIER_NEW, suit_font),
             tags=tag
         )
 

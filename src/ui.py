@@ -107,8 +107,9 @@ class UI:
                 self.render_back(canvas, x, y)
 
     def render_back(self, canvas, x, y):
-     width = self.CARD_WIDTH
-     height = self.CARD_HEIGHT
+     from src.card import CARD
+     width = CARD.WIDTH
+     height = CARD.HEIGHT
 
 
     # Draw card background
@@ -150,6 +151,7 @@ class UI:
 
     # Overlap gap (negative)
         self.CARD_GAP = int(-self.CARD_WIDTH * 0.4)
+
 
     def draw(self):
         self.update_player_info()
