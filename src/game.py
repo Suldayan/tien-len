@@ -1,4 +1,5 @@
 from src.player import Player
+from src.combo import Combo
 
 class Game:
     def __init__(self, players: list[Player]):
@@ -43,6 +44,7 @@ class Game:
 
     #turn helpers 
     def current_player(self):
+        self.fetch_all_playable_hands(self.players[self.current_index])
         return self.players[self.current_index]
 
     def next_turn(self):
@@ -164,6 +166,39 @@ class Game:
 
         # Compare their tuple values directly
         return card_strength(player_strongest_card) > card_strength(pot_strongest_card)
+    
+    def get_all_subsets(self, cards, current=[], start=0, results=[]):
+        if len(current) > 0:
+            results.append(list(current))
+        for i in range(start, len(cards)):
+            current.append(cards[i])
+            self.get_all_subsets(cards, current, i + 1, results)
+            current.pop()
+        return results
+
+    def card_strength(self, card):
+        return card.rank.value * 10 + card.suit.SuitRank
+
+    def fetch_all_playable_hands(self, player):  
+        cards = player.hand.get_cards()
+        playable_hands = []
+        all_subsets = self.get_all_subsets(cards, [], 0, [])
+        for subset in all_subsets:
+            combo = player.hand.make_combo(subset)
+            if combo is not None and self.can_play(combo):
+                playable_hands.append(combo)
+        return playable_hands
+
+    def has_valid_move(self, player):
+        if self.current_combo is None:
+            return True
+        cards = player.hand.get_cards()
+        all_subsets = self.get_all_subsets(cards, [], 0, [])
+        for subset in all_subsets:
+            combo = player.hand.make_combo(subset)
+            if combo is not None and self.can_play(combo):
+                return True
+        return False
 
     def play_cards(self, selected_cards):
     
@@ -206,16 +241,6 @@ class Game:
         """Game ends when only 0 or 1 players still have cards."""
         active = sum(1 for p in self.players if len(p.hand.get_cards()) > 0)
         return active <= 1
-    
-    def has_valid_move(self, player):
-        if self.current_combo is None:
-            return True
-        
-        for card in player.hand.get_cards():
-            combo = player.hand.make_combo([card])
-            if combo and self.can_play(combo):
-                return True
-        return False
     
     #Called when game's over. Updates points + returns winner
     def end_match(self):
