@@ -33,6 +33,9 @@ class CARD:
     def __repr__(self): 
         return f"{self.rank.label}{self.suit.symbol}"
     
+    def strength(self):
+        return self.rank.value * 10 + self.suit.SuitRank
+    
     def toggle_selected(self):
         self.selected = not self.selected
 
