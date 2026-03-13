@@ -2,6 +2,9 @@ from src.suit import SUIT
 from src.rank import RANK
 
 class CARD:
+    WIDTH = 80
+    HEIGHT = 120
+
     def __init__(self, suit: SUIT, rank: RANK):
         self.suit = suit
         self.rank = rank
@@ -27,13 +30,17 @@ class CARD:
     def __str__(self):
         return f"{self.rank} of {self.suit}"
     
+    def __repr__(self): 
+        return f"{self.rank.label}{self.suit.symbol}"
+    
     def toggle_selected(self):
         self.selected = not self.selected
 
 
     def render(self, canvas, x, y, click_callback=None):
-        width = 100
-        height = 150
+        width = self.WIDTH
+        height = self.HEIGHT
+
 
         # Move up if selected
         if self.selected:

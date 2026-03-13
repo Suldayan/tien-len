@@ -100,30 +100,70 @@ class Game:
         Very basic rule:
         - If table is empty: any valid combo can be played
         - Otherwise: must match type and (for straight) length, and have higher top rank
-        expand this later for Tien Len rules (bombs, 2, etc.).
+        You can expand this later for Tien Len rules (bombs, 2, etc.).
         """
-        if combo is None:
-            return False
+        #win instanly if you have 6 pair
+        #win instanly if you have 12/13 cards that are all red/black
 
-        if self.current_combo is None:
+        #Win instanly if you play all 2s
+        #if (combo.combo_type in ["FOUR_OF_A_KIND"] 
+        #and combo.cards[0].rank.value == 13
+        #):
+        #    return True #and win the game
+
+        if self.current_combo is None: #pot is empty
             return True
 
-        if combo.combo_type != self.current_combo.combo_type:
+        #Any 4 of a kind beats 2 
+        if (combo.combo_type in ["FOUR_OF_A_KIND"] 
+        and self.current_combo.combo_type in ["SINGLE"] 
+        and self.current_combo.cards[0].rank.value == 13
+        ):
+            return True
+
+        #double straight beats 2
+        if (combo.combo_type in ["DOUBLE_STRAIGHT"]
+        and self.current_combo.combo_type in ["SINGLE"] 
+        and self.current_combo.cards[0].rank.value == 13
+        ):
+            return True
+
+        #4 pair of double straight can beat 2 2
+        if (combo.combo_type in ["DOUBLE_STRAIGHT"] 
+        and combo.length == 8 
+        and self.current_combo.combo_type in ["PAIR"]
+        and self.current_combo.cards[0].rank.value == 13 
+        ):
+            return True
+
+        #5 pair of double straight can beat 2 2 2
+        if (combo.combo_type in ["DOUBLE_STRAIGHT"] 
+        and combo.length == 10 
+        and self.current_combo.combo_type in ["TRIPLE"]
+        and self.current_combo.cards[0].rank.value == 13
+        ):
+            return True
+
+        #this condition has already been check in play_cards()
+        #if combo is None: 
+            #return False
+
+        if combo.combo_type != self.current_combo.combo_type: #check if they are the same type
             return False
 
-        if combo.combo_type in ["STRAIGHT"] and combo.length != self.current_combo.length:
+        if combo.combo_type in ["STRAIGHT", "DOUBLE_STRAIGHT"] and combo.length != self.current_combo.length:
             return False
-        
-        #fixed: 
+            
         def card_strength(c):
-            return (c.rank.value, c.suit.SuitRank)
+            return (c.rank.value, c.suit.SuitRank) #compare rank first, then compare suit
 
-        # find the strongest card in the new combo and the old combo
-        new_strongest_card = max(combo.cards, key=card_strength)
-        old_strongest_card = max(self.current_combo.cards, key=card_strength)
+        #Find the strongest card that the player selected 
+        player_strongest_card = max(combo.cards, key=card_strength) 
+        #Find the strongest card in the pot
+        pot_strongest_card = max(self.current_combo.cards, key=card_strength)
 
         # Compare their tuple values directly
-        return card_strength(new_strongest_card) > card_strength(old_strongest_card)
+        return card_strength(player_strongest_card) > card_strength(pot_strongest_card)
 
     def play_cards(self, selected_cards):
     
@@ -141,7 +181,7 @@ class Game:
 
         # Add hand to play into history
         self.played_cards_history.append(combo)
-        print("Added combo into histroy")
+        print(f"Added combo: {combo} into history")
 
         # remove cards from player's hand
         for c in selected_cards:
@@ -180,18 +220,44 @@ class Game:
     #Called when game's over. Updates points + returns winner
     def end_match(self):
         winner = None
-        loser = None
+        losers = []
 
         for player in self.players:
             if len(player.hand.get_cards()) == 0:
                 winner = player
             else:
-                loser = player
-        
-        if winner and loser:
-            remaining_cards = len(loser.hand.get_cards())
-            winner.points += remaining_cards*10
-            loser.points -= remaining_cards*10
-        
-        return winner, loser
-            
+                losers.append(player)
+
+        if winner:
+            for loser in losers:
+                remaining = len(loser.hand.get_cards())
+                winner.points += remaining * 10
+                loser.points -= remaining * 10
+
+        return winner
+
+    def round_results(self):
+        winner = self.end_match()
+        lines = []
+        lines.append(f"Congratulations, {winner.get_name()}! You win :)" if winner else "Game Over")
+        lines.append("")
+        for player in self.players:
+            lines.append(f"{player.get_name()}: {player.get_points()} pts")
+        return "\n".join(lines)
+    
+    def reset(self, deck):
+        deck.reset()
+        deck.shuffle()
+
+        for player in self.players:
+            player.hand.set_cards(deck.deal(13))
+            player.set_turn(False)
+            player.set_points(0)
+
+        self.current_combo = None
+        self.passed.clear()
+        self.played_cards_history = []
+        self.last_player_index = None
+        self.round_number = 1
+        self.set_first_turn()
+                    

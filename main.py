@@ -18,7 +18,7 @@ def main():
     root = tk.Tk()
     root.title("Card Demo")
 
-    ui = UI(root, game)
+    ui = UI(root, game, deck)
 
     # Start game by drawing everything
     ui.draw()

@@ -1,18 +1,23 @@
 import tkinter as tk
 from src.game import Game
+from src.deck import DECK
 from tkinter import messagebox
 
 class UI:
-    def __init__(self, root, game: Game):
+    def __init__(self, root, game: Game, deck: DECK):
         self.root = root
         self.game = game
+        self.deck = deck
 
         self.user = game.players[0]
         self.bot = game.players[1]
 
-        self.CARD_WIDTH = 100
-        self.CARD_HEIGHT = 150
+        from src.card import CARD
+        
+        self.CARD_WIDTH = CARD.WIDTH
+        self.CARD_HEIGHT = CARD.HEIGHT
         self.CARD_GAP = -40
+
 
         root.configure(bg="green")
         root.minsize(500, 700) # Increased slightly to give the cards room to breathe
@@ -26,7 +31,7 @@ class UI:
 
         self.bot_canvas = tk.Canvas(self.top_frame, bg="green", highlightthickness=0, bd=0,
                                     height=self.CARD_HEIGHT + 40)
-        self.bot_canvas.pack(fill="x", padx=10)
+        self.bot_canvas.pack(fill="both", expand=True, padx=10)
 
         # --- BOTTOM ZONE: User & Controls ---
         # We pack this BEFORE the middle table so it claims its space at the bottom first!
@@ -49,7 +54,7 @@ class UI:
         # 2. Put user canvas right above the buttons
         self.user_canvas = tk.Canvas(self.bottom_frame, bg="green", highlightthickness=0, bd=0,
                                      height=self.CARD_HEIGHT + 40)
-        self.user_canvas.pack(side="bottom", fill="x", padx=10)
+        self.user_canvas.pack(fill="both", expand=True, padx=10)
 
         # 3. Put user label right above their canvas
         self.user_label = tk.Label(self.bottom_frame, text="", font=("Arial", 20), bg="green", fg="white")
@@ -61,7 +66,7 @@ class UI:
         self.table_canvas.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Redraw on resize
-        root.bind("<Configure>", lambda e: self.draw())
+        root.bind("<Configure>", lambda e: (self.auto_scale_cards(), self.draw()))
         
         # --- THE KICKSTART ---
         # Print to console so you know who the game picked to start
@@ -99,17 +104,62 @@ class UI:
             if canvas == self.user_canvas:
                 card.render(canvas, x, y, click_callback=self.card_clicked)
             else:
-                card.render(canvas, x, y)
+                self.render_back(canvas, x, y)
+
+    def render_back(self, canvas, x, y):
+     width = self.CARD_WIDTH
+     height = self.CARD_HEIGHT
+
+
+    # Draw card background
+     canvas.create_rectangle(
+        x - width//2, y - height//2,
+        x + width//2, y + height//2,
+        fill="#1E3A8A",   # deep blue
+        outline="white",
+        width=3
+    )
+
+    # Optional: add a pattern or symbol
+     canvas.create_text(
+        x, y,
+        text="★",
+        fill="white",
+        font=("Arial", 40)
+    )
+    def auto_scale_cards(self):\
+    
+        canvas_width = self.user_canvas.winfo_width()
+        num_cards = len(self.user.get_hand().get_cards())
+        if num_cards == 0:
+          return
+    # Minimum and maximum card sizes 
+        MAX_W, MAX_H = 100, 150
+        MIN_W, MIN_H = 50, 75
+    # Compute ideal width so all cards fit
+    # take 30% overlap
+        ideal_width = canvas_width / (num_cards * 0.7)
+
+    # Clamp width between min and max
+        new_width = max(MIN_W, min(MAX_W, ideal_width))
+        new_height = new_width * 1.5  # keep 2:3 ratio
+
+    # Update UI card size
+        self.CARD_WIDTH = int(new_width)
+        self.CARD_HEIGHT = int(new_height)
+
+    # Overlap gap (negative)
+        self.CARD_GAP = int(-self.CARD_WIDTH * 0.4)
 
     def draw(self):
         self.update_player_info()
         self.draw_cards(self.bot_canvas, self.bot.get_hand().get_cards())
         self.draw_cards(self.user_canvas, self.user.get_hand().get_cards())
         #fixed: always clear the middle table before redrawing
-        self.table_canvas.delete("all") 
+        self.table_canvas.delete("all")
 
         if self.game.current_combo:
-            #fixed: target the  middle canvas instead of bot_canvas
+            #fixed: target the middle canvas instead of bot_canvas
             self.table_canvas.update_idletasks()
 
             width = self.table_canvas.winfo_width()
@@ -117,15 +167,15 @@ class UI:
 
             cards = self.game.current_combo.cards
 
-            #spacing for played cards on the table 
+            #spacing for played cards on the table
             played_card_spacing = 60
 
             #calculate total width of the played group
-            #cassuming render draws from center x
+            #assuming render draws from center x
             if len(cards) > 1:
-                 total_group_width = (len(cards) - 1) * played_card_spacing
+                total_group_width = (len(cards) - 1) * played_card_spacing
             else:
-                 total_group_width = 0
+                total_group_width = 0
 
             start_x = (width // 2) - (total_group_width // 2)
             center_y = height // 2
@@ -149,25 +199,13 @@ class UI:
         selected = self.user.get_hand().get_selected_cards()
 
         if not selected:
-            if not self.game.has_valid_move(self.user):
-                print("No valid move. You must pass.")
-                self.game.pass_turn()
-                self.draw()
-                self.root.after(800, self.bot_turn)
             return
-        
-        message = self.game.play_cards(selected)
 
-        print(message)
-
+        self.game.play_cards(selected)
         self.draw()
-
-        if self.game.is_game_over():
-            self.handle_game_over()
+        if self.check_game_over():
             return
-
-        self.root.after(800, self.bot_turn)
-
+        self.root.after(800, self.advance_turn)
 
     def pass_turn(self):
         if not self.user.is_turn():
@@ -175,37 +213,50 @@ class UI:
 
         self.game.pass_turn()
         self.draw()
-
-        self.root.after(800, self.bot_turn)
+        if self.check_game_over():
+            return
+        self.root.after(800, self.advance_turn)
 
     def bot_turn(self):
-            if not self.bot.is_turn() or self.game.is_game_over():
-                return
-
-            selected_cards = self.bot.make_move(self.game)
-
-            if selected_cards:
-                self.game.play_cards(selected_cards)
-            else:
-                self.game.pass_turn()
-
-            self.draw()
-            
-            if self.game.current_player() == self.user:
-                if not self.game.has_valid_move(self.user):
-                    print("User has no valid move. Auto pass.")
-                    self.root.after(800, self.auto_pass_user)
-            else: 
-                if not self.game.is_game_over():
-                    self.root.after(1000, self.bot_turn)
-
-    def auto_pass_user(self):
-        if not self.user.is_turn():
+        if not self.bot.is_turn() or self.game.is_game_over():
             return
 
+        selected_cards = self.bot.make_move(self.game)
+
+        if selected_cards:
+            self.game.play_cards(selected_cards)
+        else:
+            self.game.pass_turn()
+
+        self.draw()
+        if self.check_game_over():
+            return
+        self.root.after(800, self.advance_turn)
+
+    def advance_turn(self):
+        """Single choke point: decides what happens after any play or pass."""
+        if self.game.is_game_over():
+            self.handle_game_over()
+            return
+
+        current = self.game.current_player()
+
+        if not self.game.has_valid_move(current):
+            # Whoever is stuck gets auto-passed, bot or user
+            self.root.after(800, lambda: self.auto_pass(current))
+        elif current == self.bot:
+            self.root.after(800, self.bot_turn)
+        # else: user's turn — just wait for their input
+
+    def auto_pass(self, player):
+        """Automatically passes for any player with no valid moves."""
+        if not player.is_turn():
+            return
+
+        print(f"{player.get_name()} has no valid move. Auto pass.")
         self.game.pass_turn()
         self.draw()
-        self.root.after(800, self.bot_turn)
+        self.root.after(800, self.advance_turn)
 
     def card_clicked(self, card):
         if not self.user.is_turn():
@@ -216,20 +267,22 @@ class UI:
         self.draw()
 
     def handle_game_over(self):
-        winner, loser = self.game.end_match()
-
-        if winner:
-            message = (
-                f"Congratulations, {winner.get_name()}!\nYou win :)\n\n"
-                f"{winner.get_name()}'s points: {winner.get_points()}\n"
-                f"{loser.get_name()}'s points: {loser.get_points()}"
-            )
-        else: 
-            message = "Game over"
-
+        message = self.game.round_results()
         play_again = messagebox.askyesno("Match Result", message + "\n\nWanna play again?")
         if play_again:
             self.reset_game()
         else:
             self.root.destroy()
-    
+
+    def check_game_over(self):
+        """Call after any play or pass. Returns True if game ended."""
+        if self.game.is_game_over():
+            self.handle_game_over()
+            return True
+        return False
+
+    def reset_game(self):
+        self.game.reset(self.deck)
+        self.draw()
+        if self.bot.is_turn():
+            self.root.after(800, self.bot_turn)
