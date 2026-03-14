@@ -2,6 +2,7 @@ import tkinter as tk
 from src.game import Game
 from src.deck import DECK
 from tkinter import messagebox
+from src.card import CARD
 
 class UI:
     def __init__(self, root, game: Game, deck: DECK):
@@ -76,13 +77,11 @@ class UI:
         if self.bot.is_turn():
             self.root.after(1000, self.bot_turn)
 
-        #added these two line so bot can start after delay 0.8sec
         self.draw()
-        self.root.after(800, self.bot_turn)
 
     def update_player_info(self):
-        self.bot_label.config(text=f"{self.bot.get_name()} - {self.bot.get_points()} pts")
-        self.user_label.config(text=f"{self.user.get_name()} - {self.user.get_points()} pts")
+        self.bot_label.config(text=f"{self.bot.get_name()}: {self.bot.get_points()} pts")
+        self.user_label.config(text=f"{self.user.get_name()}: {self.user.get_points()} pts")
 
     def draw_cards(self, canvas, cards):
         canvas.update_idletasks()
@@ -128,7 +127,7 @@ class UI:
         fill="white",
         font=("Arial", 40)
     )
-    def auto_scale_cards(self):\
+    def auto_scale_cards(self):
     
         canvas_width = self.user_canvas.winfo_width()
         num_cards = len(self.user.get_hand().get_cards())
@@ -151,6 +150,9 @@ class UI:
 
     # Overlap gap (negative)
         self.CARD_GAP = int(-self.CARD_WIDTH * 0.4)
+
+        CARD.WIDTH = self.CARD_WIDTH
+        CARD.HEIGHT = self.CARD_HEIGHT
 
 
     def draw(self):
