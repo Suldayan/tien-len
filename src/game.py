@@ -156,16 +156,10 @@ class Game:
         if combo.combo_type in ["STRAIGHT", "DOUBLE_STRAIGHT"] and combo.length != self.current_combo.length:
             return False
             
-        def card_strength(c):
-            return (c.rank.value, c.suit.SuitRank) #compare rank first, then compare suit
+        player_strongest_card = max(combo.cards, key=lambda c: c.strength())
+        pot_strongest_card = max(self.current_combo.cards, key=lambda c: c.strength())
 
-        #Find the strongest card that the player selected 
-        player_strongest_card = max(combo.cards, key=card_strength) 
-        #Find the strongest card in the pot
-        pot_strongest_card = max(self.current_combo.cards, key=card_strength)
-
-        # Compare their tuple values directly
-        return card_strength(player_strongest_card) > card_strength(pot_strongest_card)
+        return player_strongest_card.strength() > pot_strongest_card.strength()
     
     def get_all_subsets(self, cards, current=[], start=0, results=[]):
         if len(current) > 0:
@@ -175,9 +169,6 @@ class Game:
             self.get_all_subsets(cards, current, i + 1, results)
             current.pop()
         return results
-
-    def card_strength(self, card):
-        return card.rank.value * 10 + card.suit.SuitRank
 
     def fetch_all_playable_hands(self, player):  
         cards = player.hand.get_cards()
