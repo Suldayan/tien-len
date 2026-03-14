@@ -5,30 +5,44 @@ class Bot(Player):
         super().__init__(name, hand, points)
 
     def make_move(self, game):
-        """
-        The bot strategy: Find the lowest playable card.
-        Returns a list of CARD objects or None to pass.
-        """
-        hand_cards = self.get_hand().get_cards()
-        
-        # We sort the cards so the bot plays the weakest possible valid card first.
-        hand_cards.sort() 
+        playable = game.fetch_all_playable_hands(self)
 
-        # Case 1: The table is empty (New Round)
-        # The bot must play something. We choose the lowest card.
+        # Case 1: No valid moves, pass
+        if not playable:
+            return None
+
+        # Case 2: Table is empty, pick a random combo type but play the weakest of that type
         if game.current_combo is None:
-            return [hand_cards[0]]
+            from random import choice
 
-        # Case 2: There are cards on the table.
-        # The bot looks for the first single card that can beat the current combo.
-        for card in hand_cards:
-            # We use the player's own hand logic to identify the combo type
-            temp_combo = self.hand.make_combo([card])
-            
-            # Check if this card is strong enough to play
-            if temp_combo and game.can_play(temp_combo):
-                return [card]
+            # Group playable combos by type
+            combo_types = {}
+            for combo in playable:
+                if combo.combo_type not in combo_types:
+                    combo_types[combo.combo_type] = []
+                combo_types[combo.combo_type].append(combo)
 
-        # Case 3: No playable cards found.
-        # Returning None tells the Game/UI that the bot passes.
-        return None
+            # Pick a random type, then play the weakest of that type
+            chosen_type = choice(list(combo_types.keys()))
+            best = min(combo_types[chosen_type], key=lambda combo: max(combo.cards, key=lambda c: c.strength()).strength())
+            return best.cards
+
+        # Case 3: Table has a combo — apply strategy to find best candidate
+        safe_to_play = [
+            combo for combo in playable
+            if not any(c.rank.value == 13 for c in combo.cards)
+            and combo.combo_type != "PAIR"
+        ]
+        candidates = safe_to_play if safe_to_play else playable
+
+        table_strength = max(game.current_combo.cards, key=lambda c: c.strength()).strength()
+        threshold = 25 if game.current_combo.combo_type == "SINGLE" else 15
+
+        within_threshold = [
+            combo for combo in candidates
+            if max(combo.cards, key=lambda c: c.strength()).strength() - table_strength <= threshold
+        ]
+        candidates = within_threshold if within_threshold else candidates
+
+        best = min(candidates, key=lambda combo: max(combo.cards, key=lambda c: c.strength()).strength())
+        return best.cards

@@ -170,6 +170,7 @@ class Game:
             current.pop()
         return results
 
+    """ Use this function for the UI Buzz """
     def fetch_all_playable_hands(self, player):  
         cards = player.hand.get_cards()
         playable_hands = []
@@ -178,6 +179,7 @@ class Game:
             combo = player.hand.make_combo(subset)
             if combo is not None and self.can_play(combo):
                 playable_hands.append(combo)
+        print("All playable hands:",playable_hands)
         return playable_hands
 
     def has_valid_move(self, player):
