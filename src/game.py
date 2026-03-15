@@ -1,4 +1,5 @@
 from src.player import Player
+from src.combo import Combo
 
 class Game:
     def __init__(self, players: list[Player]):
@@ -43,6 +44,7 @@ class Game:
 
     #turn helpers 
     def current_player(self):
+        self.fetch_all_playable_hands(self.players[self.current_index])
         return self.players[self.current_index]
 
     def next_turn(self):
@@ -154,16 +156,42 @@ class Game:
         if combo.combo_type in ["STRAIGHT", "DOUBLE_STRAIGHT"] and combo.length != self.current_combo.length:
             return False
             
-        def card_strength(c):
-            return (c.rank.value, c.suit.SuitRank) #compare rank first, then compare suit
+        player_strongest_card = max(combo.cards, key=lambda c: c.strength())
+        pot_strongest_card = max(self.current_combo.cards, key=lambda c: c.strength())
 
-        #Find the strongest card that the player selected 
-        player_strongest_card = max(combo.cards, key=card_strength) 
-        #Find the strongest card in the pot
-        pot_strongest_card = max(self.current_combo.cards, key=card_strength)
+        return player_strongest_card.strength() > pot_strongest_card.strength()
+    
+    def get_all_subsets(self, cards, current=[], start=0, results=[]):
+        if len(current) > 0:
+            results.append(list(current))
+        for i in range(start, len(cards)):
+            current.append(cards[i])
+            self.get_all_subsets(cards, current, i + 1, results)
+            current.pop()
+        return results
 
-        # Compare their tuple values directly
-        return card_strength(player_strongest_card) > card_strength(pot_strongest_card)
+    """ Use this function for the UI Buzz """
+    def fetch_all_playable_hands(self, player):  
+        cards = player.hand.get_cards()
+        playable_hands = []
+        all_subsets = self.get_all_subsets(cards, [], 0, [])
+        for subset in all_subsets:
+            combo = player.hand.make_combo(subset)
+            if combo is not None and self.can_play(combo):
+                playable_hands.append(combo)
+        print("All playable hands:",playable_hands)
+        return playable_hands
+
+    def has_valid_move(self, player):
+        if self.current_combo is None:
+            return True
+        cards = player.hand.get_cards()
+        all_subsets = self.get_all_subsets(cards, [], 0, [])
+        for subset in all_subsets:
+            combo = player.hand.make_combo(subset)
+            if combo is not None and self.can_play(combo):
+                return True
+        return False
 
     def play_cards(self, selected_cards):
     
@@ -183,6 +211,9 @@ class Game:
         self.played_cards_history.append(combo)
         print(f"Added combo: {combo} into history")
 
+        #Check chop scoring before updating combo
+        self.handle_two_chop(combo, player)
+
         # remove cards from player's hand
         for c in selected_cards:
             c.selected = False
@@ -201,21 +232,41 @@ class Game:
 
         self.next_turn()
         return True, "Played successfully"
+    
+    def handle_two_chop(self, new_combo, player):
+        if not self.current_combo:
+            return
+        
+        prev_combo = self.current_combo
+        prev_cards = prev_combo.cards
+
+        #Check if previous combo contains 2s?
+        twos = []
+        for card in prev_cards:
+            if card.rank.label == "2":
+                twos.append(card)
+
+        num_twos = len(twos)
+
+        #Find the one who played the 2 (called opponent)
+        #Only work for 1 bot + player!!!
+        opponent = None
+        for p in self.players:
+            if p != player:
+                opponent = p
+                break
+
+        #Determine score change:
+        penalty = num_twos * 20
+        if penalty > 0:
+            opponent.set_points(opponent.get_points() - penalty)
+            player.set_points(player.get_points() + penalty)
+            print(f"{player.get_name()} chopped {num_twos} two(s)! +{penalty} points")
 
     def is_game_over(self):
         """Game ends when only 0 or 1 players still have cards."""
         active = sum(1 for p in self.players if len(p.hand.get_cards()) > 0)
         return active <= 1
-    
-    def has_valid_move(self, player):
-        if self.current_combo is None:
-            return True
-        
-        for card in player.hand.get_cards():
-            combo = player.hand.make_combo([card])
-            if combo and self.can_play(combo):
-                return True
-        return False
     
     #Called when game's over. Updates points + returns winner
     def end_match(self):
