@@ -66,6 +66,16 @@ class UI:
         self.table_canvas = tk.Canvas(root, bg="green", highlightthickness=0, bd=0)
         self.table_canvas.pack(fill="both", expand=True, padx=10, pady=10)
 
+        #Show info when 2 is beaten
+        self.chop_label = tk.Label(
+            self.table_canvas,
+            text="",
+            font=("Arial", 22, "bold"),
+            fg="yellow",
+            bg="#003300",
+            padx=20,
+            pady=10)
+
         # Redraw on resize
         root.bind("<Configure>", lambda e: (self.auto_scale_cards(), self.draw()))
         
@@ -205,7 +215,9 @@ class UI:
         if not selected:
             return
 
-        self.game.play_cards(selected)
+        success, message = self.game.play_cards(selected)
+        if message and "chopped" in message:
+            self.show_chop_message(message)
         self.draw()
         if self.check_game_over():
             return
@@ -228,7 +240,9 @@ class UI:
         selected_cards = self.bot.make_move(self.game)
 
         if selected_cards:
-            self.game.play_cards(selected_cards)
+            success, message = self.game.play_cards(selected_cards)
+            if message and "chopped" in message:
+                self.show_chop_message(message)
         else:
             self.game.pass_turn()
 
@@ -272,11 +286,24 @@ class UI:
 
     def handle_game_over(self):
         message = self.game.round_results()
+        self.draw()
         play_again = messagebox.askyesno("Match Result", message + "\n\nWanna play again?")
         if play_again:
             self.reset_game()
         else:
             self.root.destroy()
+
+    def show_chop_message(self, text):
+        #show messgae
+        self.chop_label.config(text=text)
+        self.chop_label.place(relx=0.5, rely=0.3, anchor="center")
+
+        #hide message after 15s
+        self.root.after(5000, self.hide_chop_message)
+
+    def hide_chop_message(self):
+        self.chop_label.config(text="")
+        self.chop_label.place_forget()
 
     def check_game_over(self):
         """Call after any play or pass. Returns True if game ended."""
