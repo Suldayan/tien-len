@@ -287,11 +287,47 @@ class UI:
     def handle_game_over(self):
         message = self.game.round_results()
         self.draw()
-        play_again = messagebox.askyesno("Match Result", message + "\n\nWanna play again?")
-        if play_again:
-            self.reset_game()
-        else:
-            self.root.destroy()
+
+        popup = tk.Toplevel(self.root)
+        popup.title("Round Finished")
+        popup.geometry("350x300")
+        popup.configure(bg="green")
+
+        label = tk.Label(
+            popup,
+            text=message,
+            font=("Arial", 14),
+            bg="green",
+            fg="white",
+            justify="center")
+        label.pack(pady=20)
+
+        button_frame = tk.Frame(popup, bg="green")
+        button_frame.pack(pady=10)
+
+        continue_btn = tk.Button(
+            button_frame,
+            text="Continue match",
+            font=("Arial", 12),
+            command=lambda: self.continue_match(popup)
+        )
+        continue_btn.pack(fill="x", pady=5)
+
+        new_game_btn = tk.Button(
+            button_frame,
+            text="New game",
+            font=("Arial", 12),
+            command=lambda: self.new_game(popup)
+        )
+        new_game_btn.pack(fill="x", pady=5)
+
+        exit_btn = tk.Button(
+            button_frame,
+            text="Exit",
+            font=("Arial", 12),
+            command=self.root.destroy
+        )
+        exit_btn.pack(fill="x", pady=5)
 
     def show_chop_message(self, text):
         #show messgae
@@ -317,3 +353,31 @@ class UI:
         self.draw()
         if self.bot.is_turn():
             self.root.after(800, self.bot_turn)
+
+    def continue_match(self, popup):
+        popup.destroy()
+
+        #reset deck and deal new cards but still carry over prev points
+        self.deck.reset()
+        self.deck.shuffle()
+
+        for player in self.game.players:
+            player.hand.set_cards(self.deck.deal(13))
+            player.set_turn(False)
+
+        self.game.current_combo = None
+        self.game.passed.clear()
+        self.game.played_cards_history = []
+        self.game.last_player_index = None
+        self.game.round_number += 1
+
+        self.game.set_first_turn()
+
+        self.draw()
+
+        if self.bot.is_turn():
+            self.root.after(800, self.bot_turn)
+
+    def new_game(self, popup):
+        popup.destroy()
+        self.reset_game()
