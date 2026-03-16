@@ -23,7 +23,7 @@ class UI:
         root.configure(bg="green")
         root.minsize(500, 700) # Increased slightly to give the cards room to breathe
 
-        # --- TOP ZONE: Bot ---
+        # TOP ZONE: Bot 
         self.top_frame = tk.Frame(root, bg="green")
         self.top_frame.pack(side="top", fill="x")
         
@@ -34,10 +34,11 @@ class UI:
                                     height=self.CARD_HEIGHT + 40)
         self.bot_canvas.pack(fill="both", expand=True, padx=10)
 
-        # --- BOTTOM ZONE: User & Controls ---
+        # BOTTOM ZONE: User & Controls 
         # We pack this BEFORE the middle table so it claims its space at the bottom first!
         self.bottom_frame = tk.Frame(root, bg="green")
         self.bottom_frame.pack(side="bottom", fill="x", pady=10)
+
 
         # 1. Put buttons at the very bottom
         self.controls_frame = tk.Frame(self.bottom_frame, bg="green")
@@ -61,10 +62,18 @@ class UI:
         self.user_label = tk.Label(self.bottom_frame, text="", font=("Arial", 20), bg="green", fg="white")
         self.user_label.pack(side="bottom", pady=10)
 
-        # --- MIDDLE ZONE: The Table ---
-        # Because this is packed last with expand=True, it neatly fills the gap between Top and Bottom.
-        self.table_canvas = tk.Canvas(root, bg="green", highlightthickness=0, bd=0)
-        self.table_canvas.pack(fill="both", expand=True, padx=10, pady=10)
+        # MIDDLE ZONE: The Table
+        # Because this is packed last with expand=True, it fills the gap between Top and Bottom.
+        # A middle container to hold both the Left side-bar and the Main table
+        self.mid_frame = tk.Frame(root, bg="green")
+        self.mid_frame.pack(fill="both", expand=True)
+
+        # Left side bar for hint section
+        self.hint_canvas = tk.Canvas(self.mid_frame, bg="green", highlightthickness=0)
+        self.hint_canvas.place(relx=0, rely=0, relwidth=0.2, relheight=1.0)
+        # Main table: cards being played here
+        self.table_canvas = tk.Canvas(self.mid_frame, bg="green", highlightthickness=0)
+        self.table_canvas.place(relx=0.2, rely=0, relwidth=0.8, relheight=1.0)
 
         # Redraw on resize
         root.bind("<Configure>", lambda e: (self.auto_scale_cards(), self.draw()))
@@ -104,6 +113,29 @@ class UI:
                 card.render(canvas, x, y, click_callback=self.card_clicked)
             else:
                 self.render_back(canvas, x, y)
+
+    def draw_hint_card(self, canvas, combo_obj, current_x, current_y, canvas_width):
+        scale = 0.65
+        mini_w = self.CARD_WIDTH * scale
+        mini_h = self.CARD_HEIGHT * scale
+        
+        padding_left = 15
+        card_overlap = -int(mini_w * 0.4)
+        combo_gap = 25
+
+        num_cards = len(combo_obj.cards)
+        total_combo_width = mini_w + (num_cards - 1) * (mini_w + card_overlap)
+
+        if current_x + total_combo_width > (canvas_width - 10):
+            # Move the whole group to the next row
+            current_x = padding_left + (mini_w // 2)
+            current_y += (mini_h + 15)
+
+        for card in combo_obj.cards:
+            card.render(canvas, current_x, current_y, width=mini_w, height=mini_h, ignore_selected = True)
+            current_x += (mini_w + card_overlap)
+        
+        return (current_x - card_overlap + combo_gap), current_y
 
     def render_back(self, canvas, x, y):
      from src.card import CARD
@@ -161,6 +193,22 @@ class UI:
         self.draw_cards(self.user_canvas, self.user.get_hand().get_cards())
         #fixed: always clear the middle table before redrawing
         self.table_canvas.delete("all")
+        self.hint_canvas.delete("all")
+
+        #get all the playable hands from Game class's function "fectch_all_playable_hands"
+        playable_hands =self.game.fetch_all_playable_hands(self.user)
+
+        self.hint_canvas.update_idletasks()
+        c_width = self.hint_canvas.winfo_width()
+        if c_width <= 1: c_width = 180 # Fallback for startup
+        
+        scale = 0.65
+        h_x = 15 + (self.CARD_WIDTH * scale // 2)
+        h_y = 70
+
+        for hand in playable_hands:
+            # pass the positions and get to the updated ones
+            h_x, h_y = self.draw_hint_card(self.hint_canvas, hand, h_x, h_y, c_width)
 
         if self.game.current_combo:
             #fixed: target the middle canvas instead of bot_canvas

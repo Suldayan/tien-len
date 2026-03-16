@@ -1,6 +1,7 @@
 from src.suit import SUIT
 from src.rank import RANK
 
+
 class CARD:
     WIDTH = 100
     HEIGHT = 150
@@ -40,13 +41,13 @@ class CARD:
         self.selected = not self.selected
 
 
-    def render(self, canvas, x, y, click_callback=None):
-        width = self.WIDTH
-        height = self.HEIGHT
+    def render(self, canvas, x, y,width=None, height=None, click_callback=None, ignore_selected=False):
+        w = width if width else self.WIDTH
+        h = height if height else self.HEIGHT
 
 
         # Move up if selected
-        if self.selected:
+        if self.selected and not ignore_selected:
             y -= 20
 
         color = "red" if self.suit.name in ["Hearts", "Diamonds"] else "black"
@@ -55,29 +56,29 @@ class CARD:
 
         # Card border
         canvas.create_rectangle(
-            x - width//2, y - height//2,
-            x + width//2, y + height//2,
+            x - w//2, y - h//2,
+            x + w//2, y + h//2,
             fill="white",
             outline="black",
-            width=2,
+            width= 1 if width else 2,
             tags=tag
         )
-
+        middle_font_size = int(h * 0.45)
         # Middle symbol
         canvas.create_text(
             x, y,
             text=self.suit.symbol,
             fill=color,
-            font=(self.COURIER_NEW, 48),
+            font=(self.COURIER_NEW, middle_font_size),
             tags=tag
         )
         #Dynamic font size offset
-        rank_font = int(height*0.15)
-        suit_font = int(height*0.15)
+        rank_font = int(h*0.20)
+        suit_font = int(h*0.20)
         #Dynamic scaling_offset 
-        ox = width * 0.35
-        oy1 = height * 0.2
-        oy2 = height *0.35
+        ox = w * 0.35
+        oy1 = h * 0.17
+        oy2 = h *0.35
 
         # Top left
         canvas.create_text(
