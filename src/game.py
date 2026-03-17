@@ -204,7 +204,7 @@ class Game:
         print(f"Added combo: {combo} into history")
 
         #Check chop scoring before updating combo
-        self.handle_two_chop(combo, player)
+        chop_message = self.handle_two_chop(combo, player)
 
         # remove cards from player's hand
         for c in selected_cards:
@@ -223,14 +223,17 @@ class Game:
             return True, f"{player.get_name()} finished!"
 
         self.next_turn()
+
+        if chop_message:
+            return True, chop_message
+        
         return True, "Played successfully"
     
     def handle_two_chop(self, new_combo, player):
         if not self.current_combo:
             return
         
-        prev_combo = self.current_combo
-        prev_cards = prev_combo.cards
+        prev_cards = self.current_combo.cards
 
         #Check if previous combo contains 2s?
         twos = []
@@ -239,6 +242,18 @@ class Game:
                 twos.append(card)
 
         num_twos = len(twos)
+        if num_twos == 0:
+            return None
+        if num_twos == 1:
+            text = "a 2"
+        elif num_twos == 2:
+            text = "a pair of 2s"
+        else:
+            text = "triple 2s"
+
+        #Only bomb can chop '2'
+        if new_combo.combo_type not in ["FOUR_OF_A_KIND", "DOUBLE_STRAIGHT"]:
+            return None
 
         #Find the one who played the 2 (called opponent)
         #Only work for 1 bot + player!!!
@@ -253,7 +268,8 @@ class Game:
         if penalty > 0:
             opponent.set_points(opponent.get_points() - penalty)
             player.set_points(player.get_points() + penalty)
-            print(f"{player.get_name()} chopped {num_twos} two(s)! +{penalty} points")
+            chop_message = f"{player.get_name()} chopped {text}! +{penalty} points"
+        return chop_message
 
     def is_game_over(self):
         """Game ends when only 0 or 1 players still have cards."""

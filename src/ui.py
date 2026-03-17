@@ -78,6 +78,16 @@ class UI:
         self.table_canvas = tk.Canvas(self.mid_frame, bg="green", highlightthickness=0)
         self.table_canvas.place(relx=0.2, rely=0, relwidth=0.6, relheight=1.0)
 
+        #Show info when 2 is beaten
+        self.chop_label = tk.Label(
+            self.table_canvas,
+            text="",
+            font=("Arial", 22, "bold"),
+            fg="yellow",
+            bg="#003300",
+            padx=20,
+            pady=10)
+
         # Redraw on resize
         root.bind("<Configure>", lambda e: (self.auto_scale_cards(), self.draw()))
         
@@ -279,7 +289,9 @@ class UI:
         if not selected:
             return
 
-        self.game.play_cards(selected)
+        success, message = self.game.play_cards(selected)
+        if message and "chopped" in message:
+            self.show_chop_message(message)
         self.update_playable_hands()
         self.draw()
         if self.check_game_over():
@@ -305,7 +317,9 @@ class UI:
         selected_cards = self.bot.make_move(self.game)
 
         if selected_cards:
-            self.game.play_cards(selected_cards)
+            success, message = self.game.play_cards(selected_cards)
+            if message and "chopped" in message:
+                self.show_chop_message(message)
         else:
             self.game.pass_turn()
 
@@ -354,11 +368,60 @@ class UI:
 
     def handle_game_over(self):
         message = self.game.round_results()
-        play_again = messagebox.askyesno("Match Result", message + "\n\nWanna play again?")
-        if play_again:
-            self.reset_game()
-        else:
-            self.root.destroy()
+        self.draw()
+
+        popup = tk.Toplevel(self.root)
+        popup.title("Round Finished")
+        popup.geometry("350x300")
+        popup.configure(bg="green")
+
+        label = tk.Label(
+            popup,
+            text=message,
+            font=("Arial", 14),
+            bg="green",
+            fg="white",
+            justify="center")
+        label.pack(pady=20)
+
+        button_frame = tk.Frame(popup, bg="green")
+        button_frame.pack(pady=10)
+
+        continue_btn = tk.Button(
+            button_frame,
+            text="Continue match",
+            font=("Arial", 12),
+            command=lambda: self.continue_match(popup)
+        )
+        continue_btn.pack(fill="x", pady=5)
+
+        new_game_btn = tk.Button(
+            button_frame,
+            text="New game",
+            font=("Arial", 12),
+            command=lambda: self.new_game(popup)
+        )
+        new_game_btn.pack(fill="x", pady=5)
+
+        exit_btn = tk.Button(
+            button_frame,
+            text="Exit",
+            font=("Arial", 12),
+            command=self.root.destroy
+        )
+        exit_btn.pack(fill="x", pady=5)
+
+    def show_chop_message(self, text):
+        #show messgae
+        self.chop_label.config(text=text)
+        self.chop_label.place(relx=0.5, rely=0.3, anchor="center")
+
+        #hide message after 15s
+        self.root.after(5000, self.hide_chop_message)
+
+    def hide_chop_message(self):
+        self.chop_label.config(text="")
+        self.chop_label.place_forget()
 
     def check_game_over(self):
         """Call after any play or pass. Returns True if game ended."""
@@ -373,3 +436,31 @@ class UI:
         self.draw()
         if self.bot.is_turn():
             self.root.after(800, self.bot_turn)
+
+    def continue_match(self, popup):
+        popup.destroy()
+
+        #reset deck and deal new cards but still carry over prev points
+        self.deck.reset()
+        self.deck.shuffle()
+
+        for player in self.game.players:
+            player.hand.set_cards(self.deck.deal(13))
+            player.set_turn(False)
+
+        self.game.current_combo = None
+        self.game.passed.clear()
+        self.game.played_cards_history = []
+        self.game.last_player_index = None
+        self.game.round_number += 1
+
+        self.game.set_first_turn()
+
+        self.draw()
+
+        if self.bot.is_turn():
+            self.root.after(800, self.bot_turn)
+
+    def new_game(self, popup):
+        popup.destroy()
+        self.reset_game()
