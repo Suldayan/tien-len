@@ -3,7 +3,7 @@ from src.deck import DECK
 from src.user import User
 from src.bot import Bot
 from src.hand import Hand
-from src.ui import UI
+from src.ui.ui import UI
 from src.game import Game
 
 def main():
