@@ -3,9 +3,12 @@ from src.game import Game
 from src.deck import DECK
 from tkinter import messagebox
 from src.card import CARD
+from src.ui.turn import TurnManager
 
 class UI:
     def __init__(self, root, game: Game, deck: DECK):
+        self.turn_manager = TurnManager(self) #new member variable
+
         self.root = root
         self.game = game
         self.deck = deck
@@ -53,7 +56,7 @@ class UI:
         self.play_button = tk.Button(self.controls_frame, text="Play", font=("Arial", 16), command=self.play_selected)
         self.play_button.pack(side="left", expand=True, padx=5)
 
-        self.pass_button = tk.Button(self.controls_frame, text="Pass", font=("Arial", 16), command=self.pass_turn)
+        self.pass_button = tk.Button(self.controls_frame, text="Pass", font=("Arial", 16), command=self.turn_manager.pass_turn)
         self.pass_button.pack(side="left", expand=True, padx=5)
 
         # 2. Put user canvas right above the buttons
@@ -97,13 +100,11 @@ class UI:
 
         # If the bot was given the first turn, tell it to move!
         if self.bot.is_turn():
-            self.root.after(1000, self.bot_turn)
+            self.root.after(1000, self.turn_manager.bot_turn)
 
         self.update_playable_hands()
 
         self.draw()
-
-        
 
     def update_player_info(self):
         self.bot_label.config(text=f"{self.bot.get_name()}: {self.bot.get_points()} pts")
@@ -296,67 +297,15 @@ class UI:
         self.draw()
         if self.check_game_over():
             return
-        self.root.after(800, self.advance_turn)
+        self.root.after(800, self.turn_manager.advance_turn)
+    
+    #def pass_turn(self): is now in turn.py
 
-    def pass_turn(self):
-        if not self.user.is_turn():
-            return
+    #def bot_turn(self): is now in turn.py
 
-        self.game.pass_turn()
-        self.draw()
+    #def advance_turn(self): is now in turn.py
 
-        if self.check_game_over():
-            return
-
-        self.root.after(800, self.advance_turn)
-
-    def bot_turn(self):
-        if not self.bot.is_turn() or self.game.is_game_over():
-            return
-
-        selected_cards = self.bot.make_move(self.game)
-
-        if selected_cards:
-            success, message = self.game.play_cards(selected_cards)
-            if message and "chopped" in message:
-                self.show_chop_message(message)
-        else:
-            self.game.pass_turn()
-
-        self.update_playable_hands()
-        self.draw() 
-        if self.check_game_over():
-            return
-        self.root.after(800, self.advance_turn)
-
-    def advance_turn(self):
-        """Single choke point: decides what happens after any play or pass."""
-        if self.game.is_game_over():
-            self.handle_game_over()
-            return
-
-        current = self.game.current_player()
-
-        #refresh hint when turn changes
-        self.update_playable_hands()
-        self.draw()
-
-        if current == self.user:
-            if len(self.cached_playable_hands) == 0:
-                self.root.after(800, lambda: self.auto_pass(current))
-        elif current == self.bot:
-            self.root.after(800, self.bot_turn)
-
-    def auto_pass(self, player):
-        """Automatically passes for any player with no valid moves."""
-        if not player.is_turn() or player == self.user:
-            return
-
-        print(f"{player.get_name()} has no valid move. Auto pass.")
-        self.game.pass_turn()
-        self.update_playable_hands()
-        self.draw()
-        self.root.after(800, self.advance_turn)
+    #def auto_pass(self, player): is now in turn.py
 
     def card_clicked(self, card):
         if not self.user.is_turn():
@@ -435,7 +384,7 @@ class UI:
         self.update_playable_hands()
         self.draw()
         if self.bot.is_turn():
-            self.root.after(800, self.bot_turn)
+            self.root.after(800, self.turn_manager.bot_turn)
 
     def continue_match(self, popup):
         popup.destroy()
@@ -459,7 +408,7 @@ class UI:
         self.draw()
 
         if self.bot.is_turn():
-            self.root.after(800, self.bot_turn)
+            self.root.after(800, self.turn_manager.bot_turn)
 
     def new_game(self, popup):
         popup.destroy()
