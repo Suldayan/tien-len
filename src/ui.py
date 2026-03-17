@@ -19,6 +19,9 @@ class UI:
         self.CARD_HEIGHT = CARD.HEIGHT
         self.CARD_GAP = -40
 
+        #cache playable hands to avoid fetch_all_playable_hands being called every second
+        self.cached_playable_hands = []
+
 
         root.configure(bg="green")
         root.minsize(500, 700) # Increased slightly to give the cards room to breathe
@@ -86,7 +89,11 @@ class UI:
         if self.bot.is_turn():
             self.root.after(1000, self.bot_turn)
 
+        self.update_playable_hands()
+
         self.draw()
+
+        
 
     def update_player_info(self):
         self.bot_label.config(text=f"{self.bot.get_name()}: {self.bot.get_points()} pts")
@@ -186,6 +193,11 @@ class UI:
         CARD.WIDTH = self.CARD_WIDTH
         CARD.HEIGHT = self.CARD_HEIGHT
 
+    def update_playable_hands(self):
+        if self.user.is_turn():
+            self.cached_playable_hands = self.game.fetch_all_playable_hands(self.user)
+        else:
+            self.cached_playable_hands = []
 
     def draw(self):
         self.update_player_info()
@@ -196,7 +208,8 @@ class UI:
         self.hint_canvas.delete("all")
 
         #get all the playable hands from Game class's function "fectch_all_playable_hands"
-        playable_hands =self.game.fetch_all_playable_hands(self.user)
+        playable_hands = self.cached_playable_hands
+
 
         self.hint_canvas.update_idletasks()
         c_width = self.hint_canvas.winfo_width()
@@ -242,6 +255,7 @@ class UI:
         for card in self.user.get_hand().get_cards():
             card.selected = False
         self.user.get_hand().sort()
+        self.update_playable_hands()
         self.draw()
 
     def play_selected(self):
@@ -254,6 +268,7 @@ class UI:
             return
 
         self.game.play_cards(selected)
+        self.update_playable_hands()
         self.draw()
         if self.check_game_over():
             return
@@ -265,8 +280,10 @@ class UI:
 
         self.game.pass_turn()
         self.draw()
+
         if self.check_game_over():
             return
+
         self.root.after(800, self.advance_turn)
 
     def bot_turn(self):
@@ -280,7 +297,8 @@ class UI:
         else:
             self.game.pass_turn()
 
-        self.draw()
+        self.update_playable_hands()
+        self.draw() 
         if self.check_game_over():
             return
         self.root.after(800, self.advance_turn)
@@ -293,20 +311,24 @@ class UI:
 
         current = self.game.current_player()
 
-        if not self.game.has_valid_move(current):
-            # Whoever is stuck gets auto-passed, bot or user
-            self.root.after(800, lambda: self.auto_pass(current))
+        #refresh hint when turn changes
+        self.update_playable_hands()
+        self.draw()
+
+        if current == self.user:
+            if len(self.cached_playable_hands) == 0:
+                self.root.after(800, lambda: self.auto_pass(current))
         elif current == self.bot:
             self.root.after(800, self.bot_turn)
-        # else: user's turn — just wait for their input
 
     def auto_pass(self, player):
         """Automatically passes for any player with no valid moves."""
-        if not player.is_turn():
+        if not player.is_turn() or player == user:
             return
 
         print(f"{player.get_name()} has no valid move. Auto pass.")
         self.game.pass_turn()
+        self.update_playable_hands()
         self.draw()
         self.root.after(800, self.advance_turn)
 
@@ -335,6 +357,7 @@ class UI:
 
     def reset_game(self):
         self.game.reset(self.deck)
+        self.update_playable_hands()
         self.draw()
         if self.bot.is_turn():
             self.root.after(800, self.bot_turn)

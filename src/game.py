@@ -44,7 +44,7 @@ class Game:
 
     #turn helpers 
     def current_player(self):
-        self.fetch_all_playable_hands(self.players[self.current_index])
+       #self.fetch_all_playable_hands(self.players[self.current_index]) is being called in draw function in ui.py
         return self.players[self.current_index]
 
     def next_turn(self):
@@ -179,19 +179,11 @@ class Game:
             combo = player.hand.make_combo(subset)
             if combo is not None and self.can_play(combo):
                 playable_hands.append(combo)
-        print("All playable hands:",playable_hands)
         return playable_hands
 
     def has_valid_move(self, player):
-        if self.current_combo is None:
-            return True
-        cards = player.hand.get_cards()
-        all_subsets = self.get_all_subsets(cards, [], 0, [])
-        for subset in all_subsets:
-            combo = player.hand.make_combo(subset)
-            if combo is not None and self.can_play(combo):
-                return True
-        return False
+        #reuse function fetch_all_playable_hands since these 2 are very similar
+        return len(self.fetch_all_playable_hands(player)) > 0
 
     def play_cards(self, selected_cards):
     
