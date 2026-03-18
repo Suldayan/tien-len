@@ -4,17 +4,22 @@ from src.deck import DECK
 from tkinter import messagebox
 from src.card import CARD
 from src.ui.turn import TurnManager
+from src.ui.render import RenderManager
+from src.ui.gameflow import GameFlow
 
 class UI:
     def __init__(self, root, game: Game, deck: DECK):
-        self.turn_manager = TurnManager(self) #new member variable
-
         self.root = root
         self.game = game
         self.deck = deck
 
         self.user = game.players[0]
         self.bot = game.players[1]
+
+        #new member variable
+        self.turn_manager = TurnManager(self) 
+        self.render_manager = RenderManager(self)
+        self.game_flow_manager = GameFlow(self)
 
         from src.card import CARD
         
@@ -110,62 +115,14 @@ class UI:
         self.bot_label.config(text=f"{self.bot.get_name()}: {self.bot.get_points()} pts")
         self.user_label.config(text=f"{self.user.get_name()}: {self.user.get_points()} pts")
 
-    def draw_cards(self, canvas, cards):
-        canvas.update_idletasks()
-        canvas.delete("all")
+    #def draw_cards(self, canvas, cards): is now in render.py
 
-        num_cards = len(cards)
-        if num_cards == 0:
-            return
-
-        canvas_width = canvas.winfo_width()
-        canvas_height = canvas.winfo_height()
-
-        total_width = num_cards * self.CARD_WIDTH + (num_cards - 1) * self.CARD_GAP
-        start_x = (canvas_width - total_width) // 2 + self.CARD_WIDTH // 2
-        y = canvas_height // 2
-
-        for i, card in enumerate(cards):
-            x = start_x + i * (self.CARD_WIDTH + self.CARD_GAP)
-            if canvas == self.user_canvas:
-                card.render(canvas, x, y, click_callback=self.card_clicked)
-            else:
-                self.render_back(canvas, x, y)
-
-    def draw_hint_card(self, canvas, combo_obj, current_x, current_y, canvas_width, canvas_height):
-        scale = 0.65
-        mini_w = self.CARD_WIDTH * scale
-        mini_h = self.CARD_HEIGHT * scale
-        
-        padding_left = 15
-        card_overlap = -int(mini_w * 0.4)
-        combo_gap = 25
-
-        num_cards = len(combo_obj.cards)
-        total_combo_width = mini_w + (num_cards - 1) * (mini_w + card_overlap)
-
-        if current_x + total_combo_width > (canvas_width - 10):
-            # Move the whole group to the next row
-            current_x = padding_left + (mini_w // 2)
-            current_y += (mini_h + 15)
-        
-        #if the combos exceeding the height of canvas, it won't show the next combos
-        if current_y + mini_h > (canvas_height - 10):
-            return None, None 
-
-        for card in combo_obj.cards:
-            card.render(canvas, current_x, current_y, width=mini_w, height=mini_h, ignore_selected = True)
-            current_x += (mini_w + card_overlap)
-
-        
-        
-        return (current_x - card_overlap + combo_gap), current_y
+    #def draw_hint_card(self, canvas, combo_obj, current_x, current_y, canvas_width, canvas_height): is now in render.py
 
     def render_back(self, canvas, x, y):
      from src.card import CARD
      width = CARD.WIDTH
      height = CARD.HEIGHT
-
 
     # Draw card background
      canvas.create_rectangle(
@@ -184,7 +141,6 @@ class UI:
         font=("Arial", 40)
     )
     def auto_scale_cards(self):
-    
         canvas_width = self.user_canvas.winfo_width()
         num_cards = len(self.user.get_hand().get_cards())
         if num_cards == 0:
@@ -218,8 +174,8 @@ class UI:
 
     def draw(self):
         self.update_player_info()
-        self.draw_cards(self.bot_canvas, self.bot.get_hand().get_cards())
-        self.draw_cards(self.user_canvas, self.user.get_hand().get_cards())
+        self.render_manager.draw_cards(self.bot_canvas, self.bot.get_hand().get_cards())
+        self.render_manager.draw_cards(self.user_canvas, self.user.get_hand().get_cards())
         #fixed: always clear the middle table before redrawing
         self.table_canvas.delete("all")
         self.hint_canvas.delete("all")
@@ -239,7 +195,7 @@ class UI:
 
         for hand in playable_hands:
             # pass the positions and get to the updated ones
-            result = self.draw_hint_card(self.hint_canvas, hand, h_x, h_y, c_width, c_height)
+            result = self.render_manager.draw_hint_card(self.hint_canvas, hand, h_x, h_y, c_width, c_height)
 
             if result == (None, None):
                 break
@@ -340,7 +296,7 @@ class UI:
             button_frame,
             text="Continue match",
             font=("Arial", 12),
-            command=lambda: self.continue_match(popup)
+            command=lambda: self.game_flow_manager.continue_match(popup)
         )
         continue_btn.pack(fill="x", pady=5)
 
@@ -348,7 +304,7 @@ class UI:
             button_frame,
             text="New game",
             font=("Arial", 12),
-            command=lambda: self.new_game(popup)
+            command=lambda: self.game_flow_manager.new_game(popup)
         )
         new_game_btn.pack(fill="x", pady=5)
 
@@ -372,45 +328,15 @@ class UI:
         self.chop_label.config(text="")
         self.chop_label.place_forget()
 
-    def check_game_over(self):
+    def check_game_over(self): #don't move this to gameflow.py yet, it will break everything
         """Call after any play or pass. Returns True if game ended."""
         if self.game.is_game_over():
             self.handle_game_over()
             return True
         return False
 
-    def reset_game(self):
-        self.game.reset(self.deck)
-        self.update_playable_hands()
-        self.draw()
-        if self.bot.is_turn():
-            self.root.after(800, self.turn_manager.bot_turn)
+    #def reset_game(self): is now in game_dialog.py
 
-    def continue_match(self, popup):
-        popup.destroy()
+    #def continue_match(self, popup): is now in game_dialog.py
 
-        #reset deck and deal new cards but still carry over prev points
-        self.deck.reset()
-        self.deck.shuffle()
-
-        for player in self.game.players:
-            player.hand.set_cards(self.deck.deal(13))
-            player.set_turn(False)
-
-        self.game.current_combo = None
-        self.game.passed.clear()
-        self.game.played_cards_history = []
-        self.game.last_player_index = None
-        self.game.round_number += 1
-
-        self.game.set_first_turn()
-
-        self.draw()
-
-        if self.bot.is_turn():
-            self.root.after(800, self.turn_manager.bot_turn)
-
-    def new_game(self, popup):
-        popup.destroy()
-        self.reset_game()
-
+    #def new_game(self, popup): is now in game_dialog.py
