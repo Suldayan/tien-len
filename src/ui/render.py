@@ -109,6 +109,23 @@ class RenderManager:
                 card.render(self.ui.table_canvas, x, center_y)
 
     def render_back(self, canvas, x, y):
-     from src.card import CARD
-     width = CARD.WIDTH
-     height = CARD.HEIGHT
+        from src.card import CARD
+        width = CARD.WIDTH
+        height = CARD.HEIGHT
+
+        #Draw card background
+        canvas.create_rectangle(
+        x - width//2, y - height//2,
+        x + width//2, y + height//2,
+        fill="#1E3A8A",   # deep blue
+        outline="white",
+        width=3
+        )
+
+        #Optional: add a pattern or symbol
+        canvas.create_text(
+        x, y,
+        text="★",
+        fill="white",
+        font=("Arial", 40)
+        )

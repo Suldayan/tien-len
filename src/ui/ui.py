@@ -118,22 +118,6 @@ class UI:
     #def draw_hint_card(self, canvas, combo_obj, current_x, current_y, canvas_width, canvas_height): is now in render.py
     #def render_back(self, canvas, x, y): is now in render.py
 
-    # Draw card background
-     canvas.create_rectangle(
-        x - width//2, y - height//2,
-        x + width//2, y + height//2,
-        fill="#1E3A8A",   # deep blue
-        outline="white",
-        width=3
-    )
-
-    # Optional: add a pattern or symbol
-     canvas.create_text(
-        x, y,
-        text="★",
-        fill="white",
-        font=("Arial", 40)
-    )
     def auto_scale_cards(self):
         canvas_width = self.user_canvas.winfo_width()
         num_cards = len(self.user.get_hand().get_cards())
