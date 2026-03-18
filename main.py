@@ -21,7 +21,7 @@ def main():
     ui = UI(root, game, deck)
 
     # Start game by drawing everything
-    ui.draw()
+    ui.render_manager.draw()
 
     root.mainloop()
 

@@ -5,7 +5,7 @@ class GameFlow:
     def reset_game(self):
         self.ui.game.reset(self.ui.deck)
         self.ui.update_playable_hands()
-        self.ui.draw()
+        self.ui.render_manager.draw()
         if self.ui.bot.is_turn():
             self.ui.root.after(800, self.ui.turn_manager.bot_turn)
 
@@ -28,7 +28,7 @@ class GameFlow:
 
         self.ui.game.set_first_turn()
 
-        self.ui.draw()
+        self.ui.render_manager.draw()
 
         if self.ui.bot.is_turn():
             self.ui.root.after(800, self.ui.turn_manager.bot_turn)

@@ -30,7 +30,6 @@ class UI:
         #cache playable hands to avoid fetch_all_playable_hands being called every second
         self.cached_playable_hands = []
 
-
         root.configure(bg="green")
         root.minsize(500, 700) # Increased slightly to give the cards room to breathe
 
@@ -97,7 +96,7 @@ class UI:
             pady=10)
 
         # Redraw on resize
-        root.bind("<Configure>", lambda e: (self.auto_scale_cards(), self.draw()))
+        root.bind("<Configure>", lambda e: (self.auto_scale_cards(), self.render_manager.draw()))
         
         # THE KICKSTART 
         # Print to console so you know who the game picked to start
@@ -109,20 +108,15 @@ class UI:
 
         self.update_playable_hands()
 
-        self.draw()
+        self.render_manager.draw()
 
     def update_player_info(self):
         self.bot_label.config(text=f"{self.bot.get_name()}: {self.bot.get_points()} pts")
         self.user_label.config(text=f"{self.user.get_name()}: {self.user.get_points()} pts")
 
     #def draw_cards(self, canvas, cards): is now in render.py
-
     #def draw_hint_card(self, canvas, combo_obj, current_x, current_y, canvas_width, canvas_height): is now in render.py
-
-    def render_back(self, canvas, x, y):
-     from src.card import CARD
-     width = CARD.WIDTH
-     height = CARD.HEIGHT
+    #def render_back(self, canvas, x, y): is now in render.py
 
     # Draw card background
      canvas.create_rectangle(
@@ -172,62 +166,7 @@ class UI:
         else:
             self.cached_playable_hands = []
 
-    def draw(self):
-        self.update_player_info()
-        self.render_manager.draw_cards(self.bot_canvas, self.bot.get_hand().get_cards())
-        self.render_manager.draw_cards(self.user_canvas, self.user.get_hand().get_cards())
-        #fixed: always clear the middle table before redrawing
-        self.table_canvas.delete("all")
-        self.hint_canvas.delete("all")
-
-        #get all the playable hands from Game class's function "fectch_all_playable_hands"
-        playable_hands = self.cached_playable_hands
-
-
-        self.hint_canvas.update_idletasks()
-        c_width = self.hint_canvas.winfo_width()
-        c_height = self.hint_canvas.winfo_height()
-        if c_width <= 1: c_width = 180 # Fallback for startup
-        
-        scale = 0.65
-        h_x = 15 + (self.CARD_WIDTH * scale // 2)
-        h_y = 70
-
-        for hand in playable_hands:
-            # pass the positions and get to the updated ones
-            result = self.render_manager.draw_hint_card(self.hint_canvas, hand, h_x, h_y, c_width, c_height)
-
-            if result == (None, None):
-                break
-            
-            h_x, h_y = result
-
-        if self.game.current_combo:
-            #fixed: target the middle canvas instead of bot_canvas
-            self.table_canvas.update_idletasks()
-
-            width = self.table_canvas.winfo_width()
-            height = self.table_canvas.winfo_height()
-
-            cards = self.game.current_combo.cards
-
-            #spacing for played cards on the table
-            played_card_spacing = 60
-
-            #calculate total width of the played group
-            #assuming render draws from center x
-            if len(cards) > 1:
-                total_group_width = (len(cards) - 1) * played_card_spacing
-            else:
-                total_group_width = 0
-
-            start_x = (width // 2) - (total_group_width // 2)
-            center_y = height // 2
-
-            for i, card in enumerate(cards):
-                x = start_x + i * played_card_spacing
-                #fixed: Render the card onto table_canvas
-                card.render(self.table_canvas, x, center_y)
+    #def draw(self): is now in render.py
 
     # Arrange button function
     def arrange_cards(self):
@@ -235,7 +174,7 @@ class UI:
             card.selected = False
         self.user.get_hand().sort()
         self.update_playable_hands()
-        self.draw()
+        self.render_manager.draw()
 
     def play_selected(self):
         if not self.user.is_turn():
@@ -250,17 +189,14 @@ class UI:
         if message and "chopped" in message:
             self.show_chop_message(message)
         self.update_playable_hands()
-        self.draw()
+        self.render_manager.draw()
         if self.check_game_over():
             return
         self.root.after(800, self.turn_manager.advance_turn)
     
     #def pass_turn(self): is now in turn.py
-
     #def bot_turn(self): is now in turn.py
-
     #def advance_turn(self): is now in turn.py
-
     #def auto_pass(self, player): is now in turn.py
 
     def card_clicked(self, card):
@@ -269,11 +205,11 @@ class UI:
 
         card.toggle_selected()
         print(f"Selected:", card)
-        self.draw()
+        self.render_manager.draw()
 
-    def handle_game_over(self):
+    def handle_game_over(self): #do not move this to gameflow.py since tk is not defined there
         message = self.game.round_results()
-        self.draw()
+        self.render_manager.draw()
 
         popup = tk.Toplevel(self.root)
         popup.title("Round Finished")
@@ -336,7 +272,5 @@ class UI:
         return False
 
     #def reset_game(self): is now in game_dialog.py
-
     #def continue_match(self, popup): is now in game_dialog.py
-
     #def new_game(self, popup): is now in game_dialog.py

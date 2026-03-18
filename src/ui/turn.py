@@ -9,7 +9,7 @@ class TurnManager:
             return
 
         self.ui.game.pass_turn()
-        self.ui.draw()
+        self.ui.render_manager.draw()
 
         if self.ui.check_game_over():
             return
@@ -30,7 +30,7 @@ class TurnManager:
             self.ui.game.pass_turn()
 
         self.ui.update_playable_hands()
-        self.ui.draw() 
+        self.ui.render_manager.draw() 
         if self.ui.check_game_over():
             return
         self.ui.root.after(800, self.ui.turn_manager.advance_turn)
@@ -45,7 +45,7 @@ class TurnManager:
 
         #refresh hint when turn changes
         self.ui.update_playable_hands()
-        self.ui.draw()
+        self.ui.render_manager.draw()
 
         if current == self.ui.user:
             if len(self.ui.cached_playable_hands) == 0:
@@ -61,5 +61,5 @@ class TurnManager:
         print(f"{player.get_name()} has no valid move. Auto pass.")
         self.ui.game.pass_turn()
         self.ui.update_playable_hands()
-        self.ui.draw()
+        self.ui.render_manager.draw()
         self.ui.root.after(800, self.ui.turn_manager.advance_turn)
