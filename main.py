@@ -4,7 +4,7 @@ from src.user import User
 from src.bot import Bot
 from src.hand import Hand
 from src.ui.ui import UI
-from src.game import Game
+from src.game.game import Game
 
 def main():
     deck = DECK()

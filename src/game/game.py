@@ -1,5 +1,8 @@
+#the reason that game.py uses helper function is because game.py only do one thing
+#in ui.py, using class is much more cleaner since each class has a specific job
 from src.player import Player
 from src.combo import Combo
+from src.game.validateplay import can_play as can_play_impl
 
 class Game:
     def __init__(self, players: list[Player]):
@@ -97,70 +100,10 @@ class Game:
             self.next_turn()
 
     # --- play logic ---
+    #def can_play(self, combo): is now in validateplay.py
     def can_play(self, combo):
-        """
-        Very basic rule:
-        - If table is empty: any valid combo can be played
-        - Otherwise: must match type and (for straight) length, and have higher top rank
-        You can expand this later for Tien Len rules (bombs, 2, etc.).
-        """
-        #win instanly if you have 6 pair
-        #win instanly if you have 12/13 cards that are all red/black
+        return can_play_impl(self, combo)
 
-        #Win instanly if you play all 2s
-        #if (combo.combo_type in ["FOUR_OF_A_KIND"] 
-        #and combo.cards[0].rank.value == 13
-        #):
-        #    return True #and win the game
-
-        if self.current_combo is None: #pot is empty
-            return True
-
-        #Any 4 of a kind beats 2 
-        if (combo.combo_type in ["FOUR_OF_A_KIND"] 
-        and self.current_combo.combo_type in ["SINGLE"] 
-        and self.current_combo.cards[0].rank.value == 13
-        ):
-            return True
-
-        #double straight beats 2
-        if (combo.combo_type in ["DOUBLE_STRAIGHT"]
-        and self.current_combo.combo_type in ["SINGLE"] 
-        and self.current_combo.cards[0].rank.value == 13
-        ):
-            return True
-
-        #4 pair of double straight can beat 2 2
-        if (combo.combo_type in ["DOUBLE_STRAIGHT"] 
-        and combo.length == 8 
-        and self.current_combo.combo_type in ["PAIR"]
-        and self.current_combo.cards[0].rank.value == 13 
-        ):
-            return True
-
-        #5 pair of double straight can beat 2 2 2
-        if (combo.combo_type in ["DOUBLE_STRAIGHT"] 
-        and combo.length == 10 
-        and self.current_combo.combo_type in ["TRIPLE"]
-        and self.current_combo.cards[0].rank.value == 13
-        ):
-            return True
-
-        #this condition has already been check in play_cards()
-        #if combo is None: 
-            #return False
-
-        if combo.combo_type != self.current_combo.combo_type: #check if they are the same type
-            return False
-
-        if combo.combo_type in ["STRAIGHT", "DOUBLE_STRAIGHT"] and combo.length != self.current_combo.length:
-            return False
-            
-        player_strongest_card = max(combo.cards, key=lambda c: c.strength())
-        pot_strongest_card = max(self.current_combo.cards, key=lambda c: c.strength())
-
-        return player_strongest_card.strength() > pot_strongest_card.strength()
-    
     def get_all_subsets(self, cards, current=[], start=0, results=[]):
         if len(current) > 0:
             results.append(list(current))
@@ -319,4 +262,3 @@ class Game:
         self.last_player_index = None
         self.round_number = 1
         self.set_first_turn()
-                    

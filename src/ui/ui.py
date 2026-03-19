@@ -1,5 +1,5 @@
 import tkinter as tk
-from src.game import Game
+from src.game.game import Game
 from src.deck import DECK
 from tkinter import messagebox
 from src.card import CARD
