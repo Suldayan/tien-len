@@ -3,6 +3,7 @@
 from src.player import Player
 from src.combo import Combo
 from src.game.validateplay import can_play as can_play_impl
+from src.game.round import start_new_round as start_new_round_impl
 
 class Game:
     def __init__(self, players: list[Player]):
@@ -66,25 +67,7 @@ class Game:
 
     #round helpers
     def start_new_round(self, starter_index=None):
-        #Clears the table and resets passes.
-        #The last player who successfully played starts the new round.
-    
-        self.round_number += 1
-        self.current_combo = None
-        self.passed.clear()
-
-        # If no starter given, use last player
-        if starter_index is None:
-            starter_index = self.last_player_index
-
-        # Safety check
-        if starter_index is None:
-            return
-
-        # switch turn
-        self.players[self.current_index].set_turn(False)
-        self.current_index = starter_index
-        self.players[self.current_index].set_turn(True)
+        return start_new_round_impl(self, starter_index=None)
 
     def pass_turn(self):
         """Current player passes. If everyone else passed, new round starts."""
@@ -113,7 +96,6 @@ class Game:
             current.pop()
         return results
 
-    """ Use this function for the UI Buzz """
     def fetch_all_playable_hands(self, player):  
         cards = player.hand.get_cards()
         playable_hands = []
