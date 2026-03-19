@@ -18,3 +18,16 @@ def start_new_round(game, starter_index=None):
     game.players[game.current_index].set_turn(False)
     game.current_index = starter_index
     game.players[game.current_index].set_turn(True)
+
+def pass_turn(game):
+    """Current player passes. If everyone else passed, new round starts."""
+    game.passed.add(game.current_index)
+
+    # If all ative players have passed except the last player who played, we reset the table.
+    active = [i for i, p in enumerate(game.players) if len(p.hand.get_cards()) > 0]
+
+    #fixed : The round ends when all bots passed except the player 
+    if len(game.passed) >= len(active) - 1:
+        game.start_new_round(starter_index=game.last_player_index)
+    else:
+        game.next_turn()

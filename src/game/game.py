@@ -4,6 +4,7 @@ from src.player import Player
 from src.combo import Combo
 from src.game.validateplay import can_play as can_play_impl
 from src.game.round import start_new_round as start_new_round_impl
+from src.game.round import pass_turn as pass_turn_impl
 
 class Game:
     def __init__(self, players: list[Player]):
@@ -66,21 +67,13 @@ class Game:
         self.players[self.current_index].set_turn(True)
 
     #round helpers
+    #def start_new_round(self, starter_index=None): is now in round.py
     def start_new_round(self, starter_index=None):
         return start_new_round_impl(self, starter_index=None)
 
+    #def pass_turn(self): is now in round.py
     def pass_turn(self):
-        """Current player passes. If everyone else passed, new round starts."""
-        self.passed.add(self.current_index)
-
-        # If all ative players have passed except the last player who played, we reset the table.
-        active = [i for i, p in enumerate(self.players) if len(p.hand.get_cards()) > 0]
-
-        #fixed : The round ends when all bots passed except the player 
-        if len(self.passed) >= len(active) - 1:
-            self.start_new_round(starter_index=self.last_player_index)
-        else:
-            self.next_turn()
+        return pass_turn_impl(self)
 
     # --- play logic ---
     #def can_play(self, combo): is now in validateplay.py
