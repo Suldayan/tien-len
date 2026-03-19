@@ -5,6 +5,7 @@ from src.combo import Combo
 from src.game.validateplay import can_play as can_play_impl
 from src.game.round import start_new_round as start_new_round_impl
 from src.game.round import pass_turn as pass_turn_impl
+from src.game.round import next_turn as next_turn_impl
 
 class Game:
     def __init__(self, players: list[Player]):
@@ -52,19 +53,9 @@ class Game:
        #self.fetch_all_playable_hands(self.players[self.current_index]) is being called in draw function in ui.py
         return self.players[self.current_index]
 
+    #def next_turn(self): is now in round.py
     def next_turn(self):
-        #switch turn to the next player who hasn't already won.
-        self.current_player().set_turn(False)
-
-        n = len(self.players)
-        for _ in range(n):
-            #get index of current player
-            self.current_index = (self.current_index + 1) % n
-            #skip players who have no cards (they already finished)
-            if len(self.players[self.current_index].hand.get_cards()) > 0:
-                break
-
-        self.players[self.current_index].set_turn(True)
+        return next_turn_impl(self)
 
     #round helpers
     #def start_new_round(self, starter_index=None): is now in round.py

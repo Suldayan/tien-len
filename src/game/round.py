@@ -31,3 +31,17 @@ def pass_turn(game):
         game.start_new_round(starter_index=game.last_player_index)
     else:
         game.next_turn()
+
+def next_turn(game):
+    #switch turn to the next player who hasn't already won.
+    game.current_player().set_turn(False)
+
+    n = len(game.players)
+    for _ in range(n):
+        #get index of current player
+        game.current_index = (game.current_index + 1) % n
+        #skip players who have no cards (they already finished)
+        if len(game.players[game.current_index].hand.get_cards()) > 0:
+            break
+
+    game.players[game.current_index].set_turn(True)
