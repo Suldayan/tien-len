@@ -45,3 +45,12 @@ def next_turn(game):
             break
 
     game.players[game.current_index].set_turn(True)
+
+def round_results(self):
+    winner = self.end_match()
+    lines = []
+    lines.append(f"Congratulations, {winner.get_name()}! You win :)" if winner else "Game Over")
+    lines.append("")
+    for player in self.players:
+        lines.append(f"{player.get_name()}: {player.get_points()} pts")
+    return "\n".join(lines)

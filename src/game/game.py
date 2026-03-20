@@ -6,6 +6,7 @@ from src.game.validateplay import can_play as can_play_impl
 from src.game.round import start_new_round as start_new_round_impl
 from src.game.round import pass_turn as pass_turn_impl
 from src.game.round import next_turn as next_turn_impl
+from src.game.round import round_results as round_results_impl
 
 class Game:
     def __init__(self, players: list[Player]):
@@ -204,14 +205,9 @@ class Game:
 
         return winner
 
+    #def round_results(self): is now in round.py
     def round_results(self):
-        winner = self.end_match()
-        lines = []
-        lines.append(f"Congratulations, {winner.get_name()}! You win :)" if winner else "Game Over")
-        lines.append("")
-        for player in self.players:
-            lines.append(f"{player.get_name()}: {player.get_points()} pts")
-        return "\n".join(lines)
+        return round_results_impl(self)
     
     def reset(self, deck):
         deck.reset()

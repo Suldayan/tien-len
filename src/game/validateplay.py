@@ -47,7 +47,6 @@ def can_play(game, combo):
     ):
         return True
 
-
     if combo.combo_type != game.current_combo.combo_type: #check if they are the same type
         return False
 
