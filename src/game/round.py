@@ -46,11 +46,29 @@ def next_turn(game):
 
     game.players[game.current_index].set_turn(True)
 
-def round_results(self):
-    winner = self.end_match()
+def round_results(game):
+    winner = game.end_match()
     lines = []
     lines.append(f"Congratulations, {winner.get_name()}! You win :)" if winner else "Game Over")
     lines.append("")
-    for player in self.players:
+    for player in game.players:
         lines.append(f"{player.get_name()}: {player.get_points()} pts")
     return "\n".join(lines)
+
+def end_match(game):
+    winner = None
+    losers = []
+
+    for player in game.players:
+        if len(player.hand.get_cards()) == 0:
+            winner = player
+        else:
+            losers.append(player)
+
+    if winner:
+        for loser in losers:
+            remaining = len(loser.hand.get_cards())
+            winner.points += remaining * 10
+            loser.points -= remaining * 10
+
+    return winner

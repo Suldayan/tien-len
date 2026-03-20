@@ -7,6 +7,7 @@ from src.game.round import start_new_round as start_new_round_impl
 from src.game.round import pass_turn as pass_turn_impl
 from src.game.round import next_turn as next_turn_impl
 from src.game.round import round_results as round_results_impl
+from src.game.round import end_match as end_match_impl
 
 class Game:
     def __init__(self, players: list[Player]):
@@ -187,23 +188,9 @@ class Game:
         return active <= 1
     
     #Called when game's over. Updates points + returns winner
+    #def end_match(self): is now in round.py
     def end_match(self):
-        winner = None
-        losers = []
-
-        for player in self.players:
-            if len(player.hand.get_cards()) == 0:
-                winner = player
-            else:
-                losers.append(player)
-
-        if winner:
-            for loser in losers:
-                remaining = len(loser.hand.get_cards())
-                winner.points += remaining * 10
-                loser.points -= remaining * 10
-
-        return winner
+        return end_match_impl(self)
 
     #def round_results(self): is now in round.py
     def round_results(self):
