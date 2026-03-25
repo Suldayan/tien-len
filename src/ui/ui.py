@@ -68,11 +68,11 @@ class UI:
         # 2. Put user canvas right above the buttons
         self.user_canvas = tk.Canvas(self.bottom_frame, bg="green", highlightthickness=0, bd=0,
                                      height=self.CARD_HEIGHT + 40)
-        self.user_canvas.pack(fill="both", expand=True, padx=10)
+        self.user_canvas.pack(fill="both", expand=True, padx=10, pady=(20, 0))
 
         # 3. Put user label right above their canvas
         self.user_label = tk.Label(self.bottom_frame, text="", font=("Arial", 20), bg="green", fg="white")
-        self.user_label.pack(side="bottom", pady=10)
+        self.user_label.pack(side="bottom", pady=(0, 5))
 
         # MIDDLE ZONE: The Table
         # Because this is packed last with expand=True, it fills the gap between Top and Bottom.

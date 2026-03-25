@@ -42,8 +42,7 @@ class TutorialOverlay:
             text=message, 
             font=("Helvetica", 12, "bold"), 
             fill="black",
-                   
-            width=400,         
+            width=600,     #wrapping     
             justify="center",
             anchor="center"
         )
@@ -54,7 +53,7 @@ class TutorialOverlay:
         text_height = bbox[3] - bbox[1]
         
         # Add padding for breathing room
-        pad_x, pad_y = 10, 10
+        pad_x, pad_y = 15, 10
         box_width = text_width + (pad_x * 2)
         box_height = text_height + (pad_y * 2)
         
