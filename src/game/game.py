@@ -1,5 +1,6 @@
 #the reason that game.py uses helper function is because game.py only do one thing
 #in ui.py, using class is much more cleaner since each class has a specific job
+import itertools
 from src.player import Player
 from src.combo import Combo
 from src.game.validateplay import can_play as can_play_impl
@@ -22,6 +23,10 @@ class Game:
         self.set_first_turn()
 
     def set_first_turn(self):
+
+        # force everyone to false first:
+        for player in self.players:
+            player.set_turn(False)
         # Initialize variables to track the absolute lowest card found across all players
         absolute_lowest_card = None
         player_with_lowest = None
@@ -73,23 +78,53 @@ class Game:
     def can_play(self, combo):
         return can_play_impl(self, combo)
 
-    def get_all_subsets(self, cards, current=[], start=0, results=[]):
-        if len(current) > 0:
-            results.append(list(current))
-        for i in range(start, len(cards)):
-            current.append(cards[i])
-            self.get_all_subsets(cards, current, i + 1, results)
-            current.pop()
-        return results
+    # def get_all_subsets(self, cards, current=[], start=0, results=[]):
+    #     if len(current) > 0:
+    #         results.append(list(current))
+    #     for i in range(start, len(cards)):
+    #         current.append(cards[i])
+    #         self.get_all_subsets(cards, current, i + 1, results)
+    #         current.pop()
+    #     return results
+
+    # def fetch_all_playable_hands(self, player):  
+    #     cards = player.hand.get_cards()
+    #     playable_hands = []
+    #     all_subsets = self.get_all_subsets(cards, [], 0, [])
+    #     for subset in all_subsets:
+    #         combo = player.hand.make_combo(subset)
+    #         if combo is not None and self.can_play(combo):
+    #             playable_hands.append(combo)
+    #     return playable_hands
 
     def fetch_all_playable_hands(self, player):  
         cards = player.hand.get_cards()
         playable_hands = []
-        all_subsets = self.get_all_subsets(cards, [], 0, [])
-        for subset in all_subsets:
-            combo = player.hand.make_combo(subset)
-            if combo is not None and self.can_play(combo):
-                playable_hands.append(combo)
+        
+        # 1. Determine which subset sizes we actually need to check
+        sizes_to_check = []
+        if self.current_combo is None:
+            # Free play: we must check all possible sizes 
+            sizes_to_check = range(1, len(cards) + 1)
+        else:
+            # We must exactly match the number of cards on the table
+            table_size = len(self.current_combo.cards)
+            sizes_to_check.append(table_size)
+            
+            # PLUS any sizes that could be a "Chop" (Bombs/Consecutive Pairs)
+            # 4-of-a-kind (4), 3-pairs (6), 4-pairs (8)
+            for chop_size in [4, 6, 8]:
+                if chop_size not in sizes_to_check and chop_size <= len(cards):
+                    sizes_to_check.append(chop_size)
+
+        # 2. Use C-optimized itertools to generate ONLY those specific sizes
+        for size in sizes_to_check:
+            for subset in itertools.combinations(cards, size):
+                # itertools returns a tuple, so we convert it to a list
+                combo = player.hand.make_combo(list(subset))
+                if combo is not None and self.can_play(combo):
+                    playable_hands.append(combo)
+                    
         return playable_hands
 
     def has_valid_move(self, player):

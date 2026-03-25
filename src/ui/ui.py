@@ -6,6 +6,8 @@ from src.card import CARD
 from src.ui.turn import TurnManager
 from src.ui.render import RenderManager
 from src.ui.gameflow import GameFlow
+from src.ui.tutorialOverlay import TutorialOverlay
+from src.tutorialController import TutorialController
 
 class UI:
     def __init__(self, root, game: Game, deck: DECK):
@@ -85,6 +87,7 @@ class UI:
         self.table_canvas = tk.Canvas(self.mid_frame, bg="green", highlightthickness=0)
         self.table_canvas.place(relx=0.2, rely=0, relwidth=0.6, relheight=1.0)
 
+
         #Show info when 2 is beaten
         self.chop_label = tk.Label(
             self.table_canvas,
@@ -102,13 +105,74 @@ class UI:
         # Print to console so you know who the game picked to start
         print(f"Game Started! User turn: {self.user.is_turn()} | Bot turn: {self.bot.is_turn()}")
 
-        # If the bot was given the first turn, tell it to move!
-        if self.bot.is_turn():
-            self.root.after(1000, self.turn_manager.bot_turn)
+        # # If the bot was given the first turn, tell it to move!
+        # if self.bot.is_turn():
+        #     self.root.after(1000, self.turn_manager.bot_turn)
 
         self.update_playable_hands()
 
         self.render_manager.draw()
+
+        # ---------------------------------TUTORIAL OVERLAY SECTION---------------------------------
+        self.tutorial_overlay = TutorialOverlay(self.root)
+        self.tutorial_controller = TutorialController()
+        # NEED FIX:The lowest card found in Game disappear after the game start, so I temporarily use this to find if user has lowest card/3 of Spade or not
+        user_cards = self.user.hand.get_cards()
+        lowest_user_card = min(user_cards) if user_cards else None
+
+        game_state = {
+            "current_combo": self.game.current_combo,
+            "is_first_game_turn": len(self.game.played_cards_history) == 0,
+            "lowest_card": lowest_user_card
+        }
+        # welcome message
+        welcome_msg = self.tutorial_controller.get_contextual_message(game_state, "game_start")
+
+       # The welcome message is the ONLY one that gets dismissible=True
+        if welcome_msg:
+            def after_welcome_click():
+                if self.user.is_turn():
+                    turn_msg = self.tutorial_controller.get_contextual_message(game_state, "user_turn")
+                    if turn_msg:
+                        # Make this one sticky!
+                        self.tutorial_overlay.show(turn_msg, dismissible=False) 
+                else:
+                    self.root.after(500, self.turn_manager.bot_turn)
+
+            # Wait for click on welcome message
+            self.tutorial_overlay.show(welcome_msg, on_dismiss=after_welcome_click, dismissible=True)
+
+    def check_turn_tutorial(self):
+        """Called whenever the turn switches back to the user."""
+        if not self.user.is_turn():
+            return 
+
+        # --- 1. THE FORCED PASS SCENARIO ---
+        # If the user has 0 valid moves, tell them exactly what to do!
+        if len(self.cached_playable_hands) == 0 and self.game.current_combo is not None:
+            self.tutorial_overlay.show("You don't have any cards that can beat the table!\n\nYou must click 'Pass' to skip your turn.", dismissible=False)
+            return
+
+        # Build the game state
+        user_cards = self.user.hand.get_cards()
+        lowest_user_card = min(user_cards) if user_cards else None
+
+        game_state = {
+            "current_combo": self.game.current_combo,
+            "is_first_game_turn": len(self.game.played_cards_history) == 0,
+            "lowest_card": lowest_user_card 
+        }
+
+        # Ask the controller for advice
+        turn_msg = self.tutorial_controller.get_contextual_message(game_state, "user_turn")
+        
+        # --- 2. THE FREE PLAY SCENARIO ---
+        # If the table is completely empty, and it isn't the first turn of the game...
+        if self.game.current_combo is None and len(self.game.played_cards_history) > 0:
+            turn_msg = "You won the round! The table has been cleared.\n\nYou can start a brand new combination."
+
+        if turn_msg:
+            self.tutorial_overlay.show(turn_msg, dismissible=False)
 
     def update_player_info(self):
         self.bot_label.config(text=f"{self.bot.get_name()}: {self.bot.get_points()} pts")
@@ -170,12 +234,40 @@ class UI:
             return
 
         success, message = self.game.play_cards(selected)
+        
+        # ---TUTORIAL INJECTION: Handle invalid Plays ---
+        if not success:
+            user_cards = self.user.hand.get_cards()
+            lowest_user_card = min(user_cards) if user_cards else None
+            game_state = {
+                "current_combo": self.game.current_combo,
+                "is_first_game_turn": len(self.game.played_cards_history) == 0,
+                "lowest_card": lowest_user_card
+            }
+
+            # Ask the tutorial controller for the text
+            tutorial_msg = self.tutorial_controller.get_contextual_message(game_state, "invalid_play")
+            
+            # Show the overlay and make it sticky!
+            if tutorial_msg:
+                full_error_msg = f"Oops! {message}.\n\n{tutorial_msg}"
+                self.tutorial_overlay.show(full_error_msg, dismissible=False)
+            
+            # Stop the function so does not advance the turn
+            return
+
+        #if tutorial showing successfully continue game flow: 
         if message and "chopped" in message:
             self.show_chop_message(message)
+
         self.update_playable_hands()
         self.render_manager.draw()
+
         if self.check_game_over():
             return
+        
+        self.tutorial_overlay.hide()
+        
         self.root.after(800, self.turn_manager.advance_turn)
     
     #def pass_turn(self): is now in turn.py
@@ -258,3 +350,7 @@ class UI:
     #def reset_game(self): is now in game_dialog.py
     #def continue_match(self, popup): is now in game_dialog.py
     #def new_game(self, popup): is now in game_dialog.py
+
+
+
+    
