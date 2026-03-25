@@ -105,10 +105,6 @@ class UI:
         # Print to console so you know who the game picked to start
         print(f"Game Started! User turn: {self.user.is_turn()} | Bot turn: {self.bot.is_turn()}")
 
-        # # If the bot was given the first turn, tell it to move!
-        # if self.bot.is_turn():
-        #     self.root.after(1000, self.turn_manager.bot_turn)
-
         self.update_playable_hands()
 
         self.render_manager.draw()
@@ -116,7 +112,7 @@ class UI:
         # ---------------------------------TUTORIAL OVERLAY SECTION---------------------------------
         self.tutorial_overlay = TutorialOverlay(self.root)
         self.tutorial_controller = TutorialController()
-        # NEED FIX:The lowest card found in Game disappear after the game start, so I temporarily use this to find if user has lowest card/3 of Spade or not
+        # NEED FIX: The lowest card found in Game disappear after the game start, so I temporarily use this to find if user has lowest card/3 of Spade or not
         user_cards = self.user.hand.get_cards()
         lowest_user_card = min(user_cards) if user_cards else None
 
@@ -128,13 +124,13 @@ class UI:
         # welcome message
         welcome_msg = self.tutorial_controller.get_contextual_message(game_state, "game_start")
 
-       # The welcome message is the ONLY one that gets dismissible=True
+       # The welcome message is the only one that gets dismissible=True
         if welcome_msg:
             def after_welcome_click():
                 if self.user.is_turn():
                     turn_msg = self.tutorial_controller.get_contextual_message(game_state, "user_turn")
                     if turn_msg:
-                        # Make this one sticky!
+                        # sticky
                         self.tutorial_overlay.show(turn_msg, dismissible=False) 
                 else:
                     self.root.after(500, self.turn_manager.bot_turn)
@@ -147,13 +143,13 @@ class UI:
         if not self.user.is_turn():
             return 
 
-        # --- 1. THE FORCED PASS SCENARIO ---
-        # If the user has 0 valid moves, tell them exactly what to do!
+        # forced pass
+        # If the user has 0 valid moves, tell them to pass
         if len(self.cached_playable_hands) == 0 and self.game.current_combo is not None:
-            self.tutorial_overlay.show("You don't have any cards that can beat the table!\n\nYou must click 'Pass' to skip your turn.", dismissible=False)
+            self.tutorial_overlay.show("You don't have any valid cards!\n\nYou must pass", dismissible=False)
             return
 
-        # Build the game state
+        # Game state
         user_cards = self.user.hand.get_cards()
         lowest_user_card = min(user_cards) if user_cards else None
 
@@ -163,13 +159,12 @@ class UI:
             "lowest_card": lowest_user_card 
         }
 
-        # Ask the controller for advice
+        # Ask the controller
         turn_msg = self.tutorial_controller.get_contextual_message(game_state, "user_turn")
         
-        # --- 2. THE FREE PLAY SCENARIO ---
-        # If the table is completely empty, and it isn't the first turn of the game...
+        # If the table is completely empty, and it isn't the first turn of the game
         if self.game.current_combo is None and len(self.game.played_cards_history) > 0:
-            turn_msg = "You won the round! The table has been cleared.\n\nYou can start a brand new combination."
+            turn_msg = "You won the round! The table has been cleared.\n\nYou can play any combination."
 
         if turn_msg:
             self.tutorial_overlay.show(turn_msg, dismissible=False)
@@ -235,7 +230,7 @@ class UI:
 
         success, message = self.game.play_cards(selected)
         
-        # ---TUTORIAL INJECTION: Handle invalid Plays ---
+        # TUTORIAL MESSAGE: Handle invalid Plays
         if not success:
             user_cards = self.user.hand.get_cards()
             lowest_user_card = min(user_cards) if user_cards else None
@@ -248,7 +243,7 @@ class UI:
             # Ask the tutorial controller for the text
             tutorial_msg = self.tutorial_controller.get_contextual_message(game_state, "invalid_play")
             
-            # Show the overlay and make it sticky!
+            # Show the overlay
             if tutorial_msg:
                 full_error_msg = f"Oops! {message}.\n\n{tutorial_msg}"
                 self.tutorial_overlay.show(full_error_msg, dismissible=False)

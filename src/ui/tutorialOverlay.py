@@ -10,7 +10,7 @@ class TutorialOverlay:
         self.rect_id = None
         self.text_id = None
 
-        # 2 Bind the click event to the whole canvas
+        #Bind the click event to the whole canvas
         self.canvas.bind("<Button-1>", self.on_click)
 
         #Variables
@@ -27,7 +27,6 @@ class TutorialOverlay:
             x1+radius, y2, x1+radius, y2, x1, y2, x1, y2-radius,
             x1, y2-radius, x1, y1+radius, x1, y1+radius, x1, y1
         ]
-        # smooth=True 
         return self.canvas.create_polygon(points, **kwargs, smooth=True)
 
     def show(self, message, on_dismiss=None, dismissible=True):
@@ -73,7 +72,7 @@ class TutorialOverlay:
         self.canvas.coords(self.text_id, box_width/2, box_height/2)
         self.canvas.tag_raise(self.text_id)
         
-        # 7. Place the canvas in the center of the screen
+        # Place the canvas in the center of the screen
         self.canvas.place(relx=0.5, rely=0.63, anchor="center")
 
         self.parent.update_idletasks()

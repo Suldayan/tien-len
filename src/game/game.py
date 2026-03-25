@@ -96,31 +96,32 @@ class Game:
     #         if combo is not None and self.can_play(combo):
     #             playable_hands.append(combo)
     #     return playable_hands
-
+     
+    # to make this function more efficient I just combine them and use itertools
     def fetch_all_playable_hands(self, player):  
         cards = player.hand.get_cards()
         playable_hands = []
         
-        # 1. Determine which subset sizes we actually need to check
+        # find out which subset sizes we actually need to check
         sizes_to_check = []
         if self.current_combo is None:
-            # Free play: we must check all possible sizes 
+            # must check all possible sizes 
             sizes_to_check = range(1, len(cards) + 1)
         else:
-            # We must exactly match the number of cards on the table
+            # must match the number of cards on the table
             table_size = len(self.current_combo.cards)
             sizes_to_check.append(table_size)
             
-            # PLUS any sizes that could be a "Chop" (Bombs/Consecutive Pairs)
-            # 4-of-a-kind (4), 3-pairs (6), 4-pairs (8)
+            # adding any sizes that could be a Chop: (Bombs/Consecutive Pairs)
+            # 4 of a kind (4), 3pairs (6), 4pairs (8)
             for chop_size in [4, 6, 8]:
                 if chop_size not in sizes_to_check and chop_size <= len(cards):
                     sizes_to_check.append(chop_size)
 
-        # 2. Use C-optimized itertools to generate ONLY those specific sizes
+        # Use C optimized itertools to get only those specific sizes
         for size in sizes_to_check:
             for subset in itertools.combinations(cards, size):
-                # itertools returns a tuple, so we convert it to a list
+                # itertools return a tuple => convert it to a list
                 combo = player.hand.make_combo(list(subset))
                 if combo is not None and self.can_play(combo):
                     playable_hands.append(combo)

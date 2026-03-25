@@ -26,7 +26,6 @@ class TurnManager:
             if message and "chopped" in message:
                 self.ui.show_chop_message(message)
         else:
-            # ---> VISUAL FEEDBACK: Flash a message when the bot passes! <---
             self.ui.game.pass_turn()
 
         self.ui.update_playable_hands()
