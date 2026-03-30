@@ -11,7 +11,7 @@ class TutorialOverlay:
         self.text_id = None
 
         #Bind the click event to the whole canvas
-        self.canvas.bind("<Button-1>", self.on_click)
+        self.parent.bind("<Button-1>", self.on_click)
 
         #Variables
         self.is_visible = False
@@ -33,7 +33,8 @@ class TutorialOverlay:
         """Pops the overlay onto the screen with a newly sized rounded box."""
         self.on_dismiss_callback = on_dismiss
         # clear anything drawn previously
-        self.canvas.delete("all") 
+        self.canvas.delete("all")
+        self.dismissible = dismissible
         
         # Create the text first 
         self.text_id = self.canvas.create_text(

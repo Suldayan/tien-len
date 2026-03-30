@@ -111,7 +111,9 @@ class UI:
 
         # ---------------------------------TUTORIAL OVERLAY SECTION---------------------------------
         self.tutorial_overlay = TutorialOverlay(self.root)
-        self.tutorial_controller = TutorialController()
+        self.tutorial_controller = TutorialController()  
+        # start the tutorial
+        self.start_game_tutorial()
         # NEED FIX: The lowest card found in Game disappear after the game start, so I temporarily use this to find if user has lowest card/3 of Spade or not
         user_cards = self.user.hand.get_cards()
         lowest_user_card = min(user_cards) if user_cards else None
@@ -148,7 +150,6 @@ class UI:
         if len(self.cached_playable_hands) == 0 and self.game.current_combo is not None:
             self.tutorial_overlay.show("You don't have any valid cards!\n\nYou must pass", dismissible=False)
             return
-
         # Game state
         user_cards = self.user.hand.get_cards()
         lowest_user_card = min(user_cards) if user_cards else None
@@ -169,6 +170,37 @@ class UI:
         if turn_msg:
             self.tutorial_overlay.show(turn_msg, dismissible=False)
 
+
+    def start_game_tutorial(self): # showing the welcome message in the first turn of the game
+        
+        user_cards = self.user.hand.get_cards()
+        lowest_user_card = min(user_cards) if user_cards else None
+
+        game_state = {
+            "current_combo": self.game.current_combo,
+            "is_first_game_turn": len(self.game.played_cards_history) == 0,
+            "lowest_card": lowest_user_card
+        }
+        
+        # ask for the welcome message
+        welcome_msg = self.tutorial_controller.get_contextual_message(game_state, "game_start")
+
+        # decide what happens after the welcome screen
+        def begin_first_turn():
+            if self.user.is_turn():
+                turn_msg = self.tutorial_controller.get_contextual_message(game_state, "user_turn")
+                if turn_msg:
+                    self.tutorial_overlay.show(turn_msg, dismissible=False) 
+            else:
+                self.root.after(500, self.turn_manager.bot_turn)
+
+        # if the tutorialController gives a welcome message, show it
+        if welcome_msg:
+            self.tutorial_overlay.show(welcome_msg, on_dismiss=begin_first_turn, dismissible=True)
+        else:
+            # if no welcome message start the turn
+            begin_first_turn()
+
     def update_player_info(self):
         self.bot_label.config(text=f"{self.bot.get_name()}: {self.bot.get_points()} pts")
         self.user_label.config(text=f"{self.user.get_name()}: {self.user.get_points()} pts")
@@ -176,7 +208,6 @@ class UI:
     #def draw_cards(self, canvas, cards): is now in render.py
     #def draw_hint_card(self, canvas, combo_obj, current_x, current_y, canvas_width, canvas_height): is now in render.py
     #def render_back(self, canvas, x, y): is now in render.py
-
     def auto_scale_cards(self):
         canvas_width = self.user_canvas.winfo_width()
         num_cards = len(self.user.get_hand().get_cards())

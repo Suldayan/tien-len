@@ -6,8 +6,6 @@ class GameFlow:
         self.ui.game.reset(self.ui.deck)
         self.ui.update_playable_hands()
         self.ui.render_manager.draw()
-        if self.ui.bot.is_turn():
-            self.ui.root.after(800, self.ui.turn_manager.bot_turn)
 
     def continue_match(self, popup):
         popup.destroy()
@@ -30,9 +28,12 @@ class GameFlow:
 
         self.ui.render_manager.draw()
 
-        if self.ui.bot.is_turn():
-            self.ui.root.after(800, self.ui.turn_manager.bot_turn)
+        self.ui.tutorial_controller.seen_welcome = False
+
+        self.ui.start_game_tutorial()
 
     def new_game(self, popup):
         popup.destroy()
         self.reset_game()
+        self.ui.tutorial_controller.seen_welcome = False
+        self.ui.start_game_tutorial()
