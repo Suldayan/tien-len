@@ -115,30 +115,6 @@ class UI:
         # start the tutorial
         self.start_game_tutorial()
         # NEED FIX: The lowest card found in Game disappear after the game start, so I temporarily use this to find if user has lowest card/3 of Spade or not
-        user_cards = self.user.hand.get_cards()
-        lowest_user_card = min(user_cards) if user_cards else None
-
-        game_state = {
-            "current_combo": self.game.current_combo,
-            "is_first_game_turn": len(self.game.played_cards_history) == 0,
-            "lowest_card": lowest_user_card
-        }
-        # welcome message
-        welcome_msg = self.tutorial_controller.get_contextual_message(game_state, "game_start")
-
-       # The welcome message is the only one that gets dismissible=True
-        if welcome_msg:
-            def after_welcome_click():
-                if self.user.is_turn():
-                    turn_msg = self.tutorial_controller.get_contextual_message(game_state, "user_turn")
-                    if turn_msg:
-                        # sticky
-                        self.tutorial_overlay.show(turn_msg, dismissible=False) 
-                else:
-                    self.root.after(500, self.turn_manager.bot_turn)
-
-            # Wait for click on welcome message
-            self.tutorial_overlay.show(welcome_msg, on_dismiss=after_welcome_click, dismissible=True)
 
     def check_turn_tutorial(self):
         """Called whenever the turn switches back to the user."""
@@ -221,8 +197,13 @@ class UI:
         ideal_width = canvas_width / (num_cards * 0.7)
 
     # Clamp width between min and max
+        # ideal width so all cards fit
+        ideal_width = canvas_width / (num_cards * 0.7)
+
         new_width = max(MIN_W, min(MAX_W, ideal_width))
-        new_height = new_width * 1.5  # keep 2:3 ratio
+        
+        ratio = 80 / 56
+        new_height = int(new_width * ratio)
 
     # Update UI card size
         self.CARD_WIDTH = int(new_width)

@@ -14,8 +14,8 @@ class RenderManager:
         canvas_height = canvas.winfo_height()
 
         total_width = num_cards * self.ui.CARD_WIDTH + (num_cards - 1) * self.ui.CARD_GAP
-        start_x = (canvas_width - total_width) // 2 + self.ui.CARD_WIDTH // 2
-        y = canvas_height // 2
+        start_x = (canvas_width - total_width) // 2
+        y = (canvas_height - self.ui.CARD_HEIGHT) // 2
 
         for i, card in enumerate(cards):
             x = start_x + i * (self.ui.CARD_WIDTH + self.ui.CARD_GAP)
@@ -53,8 +53,8 @@ class RenderManager:
 
     def draw(self):
         self.ui.update_player_info()
-        self.ui.render_manager.draw_cards(self.ui.bot_canvas, self.ui.bot.get_hand().get_cards())
-        self.ui.render_manager.draw_cards(self.ui.user_canvas, self.ui.user.get_hand().get_cards())
+        self.draw_cards(self.ui.bot_canvas, self.ui.bot.get_hand().get_cards())
+        self.draw_cards(self.ui.user_canvas, self.ui.user.get_hand().get_cards())
         #fixed: always clear the middle table before redrawing
         self.ui.table_canvas.delete("all")
         self.ui.hint_canvas.delete("all")
@@ -74,7 +74,7 @@ class RenderManager:
 
         for hand in playable_hands:
             # pass the positions and get to the updated ones
-            result = self.ui.render_manager.draw_hint_card(self.ui.hint_canvas, hand, h_x, h_y, c_width, c_height)
+            result = self.draw_hint_card(self.ui.hint_canvas, hand, h_x, h_y, c_width, c_height)
 
             if result == (None, None):
                 break
@@ -82,50 +82,47 @@ class RenderManager:
             h_x, h_y = result
 
         if self.ui.game.current_combo:
-            #fixed: target the middle canvas instead of bot_canvas
             self.ui.table_canvas.update_idletasks()
 
             width = self.ui.table_canvas.winfo_width()
             height = self.ui.table_canvas.winfo_height()
 
             cards = self.ui.game.current_combo.cards
-
-            #spacing for played cards on the table
             played_card_spacing = 60
 
-            #calculate total width of the played group
-            #assuming render draws from center x
+            # FIX THE HORIZONTAL: include the width of the final card so the whole group is perfectly centered not just the starting points
             if len(cards) > 1:
-                total_group_width = (len(cards) - 1) * played_card_spacing
+                total_group_width = ((len(cards) - 1) * played_card_spacing) + self.ui.CARD_WIDTH
             else:
-                total_group_width = 0
+                total_group_width = self.ui.CARD_WIDTH
 
-            start_x = (width // 2) - (total_group_width // 2)
-            center_y = height // 2
+            start_x = (width - total_group_width) // 2
+            
+            # FIX THE VERTICAL: subtract the card height before dividing by 2 to account for the top left anchor
+            start_y = (height - self.ui.CARD_HEIGHT) // 2
 
             for i, card in enumerate(cards):
-                x = start_x + i * played_card_spacing
-                #fixed: Render the card onto table_canvas
-                card.render(self.ui.table_canvas, x, center_y)
+                x = start_x + (i * played_card_spacing)
+                # Pass the corrected start_y instead of center_y
+                card.render(self.ui.table_canvas, x, start_y)
 
-    def render_back(self, canvas, x, y):
+
+    def render_back(self, canvas, x, y, width=None):
         from src.card import CARD
-        width = CARD.WIDTH
-        height = CARD.HEIGHT
+        # dynamic width
+        w = int(width) if width else CARD.WIDTH
+        
+        # get back_image from CARD class
+        img = CARD.get_back_image(w)
 
-        #Draw card background
-        canvas.create_rectangle(
-        x - width//2, y - height//2,
-        x + width//2, y + height//2,
-        fill="#1E3A8A",   # deep blue
-        outline="white",
-        width=3
+        # draw the image
+        canvas.create_image(
+            x, y,
+            image=img,
+            anchor="nw"  
         )
 
-        #Optional: add a pattern or symbol
-        canvas.create_text(
-        x, y,
-        text="★",
-        fill="white",
-        font=("Arial", 40)
-        )
+        # prevent garbage collecting the image
+        if not hasattr(canvas, "images"):
+            canvas.images = []
+        canvas.images.append(img)
