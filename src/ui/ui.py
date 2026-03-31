@@ -8,6 +8,7 @@ from src.ui.render import RenderManager
 from src.ui.gameflow import GameFlow
 from src.ui.tutorialOverlay import TutorialOverlay
 from src.tutorialController import TutorialController
+from src.ui.buttonManager import ButtonManager
 
 class UI:
     def __init__(self, root, game: Game, deck: DECK):
@@ -52,18 +53,13 @@ class UI:
         self.bottom_frame.pack(side="bottom", fill="x", pady=10)
 
 
-        # 1. Put buttons at the very bottom
-        self.controls_frame = tk.Frame(self.bottom_frame, bg="green")
-        self.controls_frame.pack(side="bottom", fill="x", pady=5)
-
-        self.arrange_button = tk.Button(self.controls_frame, text="Arrange", font=("Arial", 16), command=self.arrange_cards)
-        self.arrange_button.pack(side="left", expand=True, padx=5)
-
-        self.play_button = tk.Button(self.controls_frame, text="Play", font=("Arial", 16), command=self.play_selected)
-        self.play_button.pack(side="left", expand=True, padx=5)
-
-        self.pass_button = tk.Button(self.controls_frame, text="Pass", font=("Arial", 16), command=self.turn_manager.pass_turn)
-        self.pass_button.pack(side="left", expand=True, padx=5)
+        # 1. Put buttons at the very bottom (buttons are from buttonManager.py)
+        self.controls = ButtonManager(
+            parent_frame=self.bottom_frame,
+            on_arrange=self.arrange_cards,
+            on_play=self.play_selected,
+            on_pass=self.turn_manager.pass_turn
+        )
 
         # 2. Put user canvas right above the buttons
         self.user_canvas = tk.Canvas(self.bottom_frame, bg="green", highlightthickness=0, bd=0,
@@ -306,7 +302,7 @@ class UI:
             return
 
         card.toggle_selected()
-        print(f"Selected:", card)
+        #print(f"Selected:", card)
         self.render_manager.draw()
 
     def handle_game_over(self): #do not move this to gameflow.py since tk is not defined there

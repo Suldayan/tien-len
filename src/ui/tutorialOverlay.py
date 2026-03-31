@@ -41,7 +41,7 @@ class TutorialOverlay:
         self.text_id = self.canvas.create_text(
             0, 0, 
             text=message, 
-            font=("Pixelify Sans", 16, ), 
+            font=("Pixelify Sans", 15, ), 
             fill="black",
             width=600,     #wrapping     
             justify="center",
