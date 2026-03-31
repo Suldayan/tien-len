@@ -7,6 +7,7 @@ class TurnManager:
             return
 
         self.ui.game.pass_turn()
+        self.ui.show_turn_message("You passed!", 1000)
         self.ui.render_manager.draw()
 
         if self.ui.check_game_over():
@@ -23,10 +24,17 @@ class TurnManager:
 
         if selected_cards:
             success, message = self.ui.game.play_cards(selected_cards)
+            combo = self.ui.game.current_combo
             if message and "chopped" in message:
                 self.ui.show_chop_message(message)
+            if combo:
+                msg = f"Bot played {combo.combo_type}"
+            else:
+                msg = "Bot played"
+            self.ui.show_turn_message(msg, 1200)
         else:
             self.ui.game.pass_turn()
+            self.ui.show_turn_message("Bot passed", 1200)
 
         self.ui.update_playable_hands()
         self.ui.render_manager.draw() 
@@ -42,6 +50,15 @@ class TurnManager:
 
         current = self.ui.game.current_player()
 
+        def show_turn():
+            # Show turn message
+            if current == self.ui.user:
+                self.ui.show_turn_message("Your turn")
+            elif current == self.ui.bot:
+                self.ui.show_turn_message("Bot's turn...")
+
+        self.ui.root.after(800, show_turn)
+
         #refresh hint when turn changes
         self.ui.update_playable_hands()
         self.ui.render_manager.draw()
@@ -49,7 +66,7 @@ class TurnManager:
         if current == self.ui.user:
             self.ui.check_turn_tutorial()
         elif current == self.ui.bot:
-            self.ui.root.after(300, self.bot_turn)
+            self.ui.root.after(1200, self.bot_turn)
 
     # def auto_pass(self, player):
     #     """Automatically passes for bots with no valid moves."""
