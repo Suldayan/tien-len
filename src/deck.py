@@ -7,10 +7,10 @@ import random
 class DECK:
     def __init__(self):
         self.suits = [
-            SUIT("Hearts", 4, "♥"),
-            SUIT("Spades", 1, "♠"),
-            SUIT("Clubs", 2, "♣"),
-            SUIT("Diamonds", 3, "♦")
+            SUIT("Hearts", 4, "♥", "H"),
+            SUIT("Spades", 1, "♠", "S"),
+            SUIT("Clubs", 2, "♣", "C"),
+            SUIT("Diamonds", 3, "♦", "D")
         ]
 
         self.ranks = [
