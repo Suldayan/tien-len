@@ -1,4 +1,5 @@
 import tkinter as tk
+import pyglet
 
 class TutorialOverlay:
     def __init__(self, parent_window):
@@ -40,7 +41,7 @@ class TutorialOverlay:
         self.text_id = self.canvas.create_text(
             0, 0, 
             text=message, 
-            font=("Helvetica", 12, "bold"), 
+            font=("Pixelify Sans", 16, ), 
             fill="black",
             width=600,     #wrapping     
             justify="center",

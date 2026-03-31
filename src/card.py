@@ -21,7 +21,6 @@ class CARD:
         if key not in CARD.image_cache:
             path = f"src/assets/{repr(self)}.png"
             img = Image.open(path)
-            print(f"Loaded {repr(self)}.png - Original Size: {img.size}")
             img = img.resize((target_width, target_height), Image.NEAREST)
             CARD.image_cache[key] = ImageTk.PhotoImage(img)
 
