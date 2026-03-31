@@ -97,6 +97,18 @@ class UI:
             bg="#003300",
             padx=20,
             pady=10)
+        
+        #Show turn label
+        self.turn_message_after_id = None
+        self.last_turn_message = None
+        self.turn_label = tk.Label(
+            self.table_canvas,
+            text="",
+            font=("Arial", 28, "bold"),
+            fg="white",
+            bg="#003300",
+            padx=25,
+            pady=12)
 
         # Redraw on resize
         root.bind("<Configure>", lambda e: (self.auto_scale_cards(), self.render_manager.draw()))
@@ -241,6 +253,13 @@ class UI:
             return
 
         success, message = self.game.play_cards(selected)
+
+        if success:
+            combo = self.game.current_combo
+            if combo:
+                self.show_turn_message(f"You played {combo.combo_type}", 1000)
+            else:
+                self.show_turn_message("You played!", 1000)
         
         # TUTORIAL MESSAGE: Handle invalid Plays
         if not success:
@@ -275,7 +294,7 @@ class UI:
         
         self.tutorial_overlay.hide()
         
-        self.root.after(800, self.turn_manager.advance_turn)
+        self.root.after(1200, self.turn_manager.advance_turn)
     
     #def pass_turn(self): is now in turn.py
     #def bot_turn(self): is now in turn.py
@@ -346,6 +365,24 @@ class UI:
     def hide_chop_message(self):
         self.chop_label.config(text="")
         self.chop_label.place_forget()
+
+    def show_turn_message(self, text, duration=1500):
+        #Cancel prev timer if exists
+        if self.turn_message_after_id:
+            self.root.after_cancel(self.turn_message_after_id)
+
+        #Prevent same message spam
+        if text == self.last_turn_message:
+            return
+        self.last_turn_message = text
+
+        self.turn_label.config(text=text)
+        self.root.after(50, lambda: self.turn_label.place(relx=0.5, rely=0.4, anchor="center"))
+
+        self.turn_message_after_id = self.root.after(duration, self.hide_turn_message)
+
+    def hide_turn_message(self):
+        self.turn_label.place_forget()
 
     def check_game_over(self): #don't move this to gameflow.py yet, it will break everything
         """Call after any play or pass. Returns True if game ended."""
