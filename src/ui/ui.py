@@ -60,7 +60,7 @@ class UI:
             on_play=self.play_selected,
             on_pass=self.turn_manager.pass_turn
         )
-        
+
         self.controls_frame = self.bottom_frame
 
         # 2. Put user canvas right above the buttons
@@ -455,7 +455,7 @@ class UI:
         self.last_turn_message = text
 
         self.turn_label.config(text=text)
-        self.root.after(50, lambda: self.turn_label.place(relx=0.5, rely=0.4, anchor="center"))
+        self.root.after(50, lambda: self.turn_label.place(relx=0.5, rely=0.1, anchor="center"))
 
         self.turn_message_after_id = self.root.after(duration, self.hide_turn_message)
 
