@@ -3,6 +3,9 @@ class TurnManager:
         self.ui = ui
 
     def pass_turn(self):
+        if self.ui.is_paused == True:
+            return
+
         if not self.ui.user.is_turn():
             return
 
@@ -17,6 +20,9 @@ class TurnManager:
         self.ui.root.after(300, self.advance_turn)
 
     def bot_turn(self):
+        if self.ui.is_paused == True:
+            return
+
         if not self.ui.bot.is_turn() or self.ui.game.is_game_over():
             return
 
@@ -43,6 +49,8 @@ class TurnManager:
         self.ui.root.after(300, self.advance_turn)
 
     def advance_turn(self):
+        if self.ui.is_paused == True:
+            return
         """Single choke point: decides what happens after any play or pass."""
         if self.ui.game.is_game_over():
             self.ui.handle_game_over()

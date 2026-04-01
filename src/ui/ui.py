@@ -117,6 +117,64 @@ class UI:
 
         self.render_manager.draw()
 
+        #pause botton
+        self.is_paused = False
+        self.pause_button = tk.Button(
+            self.controls_frame,
+            text="Pause",
+            font=("Arial", 16),
+            command=self.toggle_pause
+        )
+        self.pause_button.pack(side="left", expand=True, padx=5)
+
+        #pause menu
+        self.pause_menu = tk.Frame(self.root, bg="green")
+
+        self.pause_panel = tk.Frame(self.pause_menu, bg="green")
+        self.pause_panel.place(relx=0.5, rely=0.5, anchor="center")
+
+        self.pause_title = tk.Label(
+            self.pause_panel,
+            text="Pause Menu",
+            font=("Arial", 35, "bold"),
+            fg="white",
+            bg="green"
+        )
+        self.pause_title.pack(pady=(0, 25))
+
+        self.resume_menu_button = tk.Button(
+            self.pause_panel,
+            text="Resume",
+            font=("Arial", 16),
+            width=18,
+            bg="#e6e6e6",
+            fg="black",
+            command=self.resume_game
+        )
+        self.resume_menu_button.pack(pady=8)
+
+        self.new_game_menu_button = tk.Button(
+            self.pause_panel,
+            text="New Game",
+            font=("Arial", 16),
+            width=18,
+            bg="#e6e6e6",
+            fg="black",
+            command=self.pause_menu_new_game
+        )
+        self.new_game_menu_button.pack(pady=8)
+
+        self.quit_menu_button = tk.Button(
+            self.pause_panel,
+            text="Quit",
+            font=("Arial", 16),
+            width=18,
+            bg="#e6e6e6",
+            fg="black",
+            command=self.root.destroy
+        )
+        self.quit_menu_button.pack(pady=8)
+
         # ---------------------------------TUTORIAL OVERLAY SECTION---------------------------------
         self.tutorial_overlay = TutorialOverlay(self.root)
         self.tutorial_controller = TutorialController()  
@@ -125,6 +183,9 @@ class UI:
         # NEED FIX: The lowest card found in Game disappear after the game start, so I temporarily use this to find if user has lowest card/3 of Spade or not
 
     def check_turn_tutorial(self):
+        if self.is_paused == True:
+            return
+
         """Called whenever the turn switches back to the user."""
         if not self.user.is_turn():
             return 
@@ -161,7 +222,9 @@ class UI:
 
 
     def start_game_tutorial(self): # showing the welcome message in the first turn of the game
-        
+        if self.is_paused == True:
+            return
+            
         user_cards = self.user.hand.get_cards()
         lowest_user_card = min(user_cards) if user_cards else None
 
@@ -176,6 +239,9 @@ class UI:
 
         # decide what happens after the welcome screen
         def begin_first_turn():
+            if self.is_paused == True:
+                return
+
             if self.user.is_turn():
                 turn_msg = self.tutorial_controller.get_contextual_message(game_state, "user_turn")
                 if turn_msg:
@@ -238,6 +304,9 @@ class UI:
 
     # Arrange button function
     def arrange_cards(self):
+        if self.is_paused == True:
+            return
+
         for card in self.user.get_hand().get_cards():
             card.selected = False
         self.user.get_hand().sort()
@@ -245,6 +314,9 @@ class UI:
         self.render_manager.draw()
 
     def play_selected(self):
+        if self.is_paused == True:
+            return
+
         if not self.user.is_turn():
             return
 
@@ -303,6 +375,9 @@ class UI:
     #def auto_pass(self, player): is now in turn.py
 
     def card_clicked(self, card):
+        if self.is_paused == True:
+            return
+            
         if not self.user.is_turn():
             return
 
@@ -396,6 +471,40 @@ class UI:
     #def continue_match(self, popup): is now in game_dialog.py
     #def new_game(self, popup): is now in game_dialog.py
 
+    def toggle_pause(self):
+        if self.is_paused == True:
+            self.resume_game()
+        else:
+            self.open_pause_menu()
 
+    def open_pause_menu(self):
+        if self.is_paused:
+            return
 
-    
+        self.is_paused = True
+        self.pause_button.config(text="Resume")
+
+        self.tutorial_overlay.hide()
+
+        self.pause_menu.place(relx=0, rely=0, relwidth=1, relheight=1)
+        self.pause_menu.lift()
+        self.pause_menu.update_idletasks()
+
+    def resume_game(self):
+        if not self.is_paused:
+            return
+
+        self.is_paused = False
+        self.pause_button.config(text="Pause")
+
+        self.pause_menu.place_forget()
+
+        if self.bot.is_turn():
+            self.root.after(100, self.turn_manager.bot_turn)
+
+    def pause_menu_new_game(self):
+        self.is_paused = False
+        self.pause_button.config(text="Pause")
+        self.pause_menu.place_forget()
+        self.game_flow_manager.reset_game()
+        self.start_game_tutorial()
