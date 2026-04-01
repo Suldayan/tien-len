@@ -20,7 +20,8 @@ class Game:
         self.played_cards_history = [] # A history of all played cards done by all active players.
         self.passed = set()            # player indices who passed this round
         self.last_player_index = None
-        self.set_first_turn()
+        self.first_move_of_match = True
+        self.required_card = None
 
     def set_first_turn(self):
 
@@ -42,6 +43,10 @@ class Game:
             if players_lowest.rank.label == "3" and players_lowest.suit.name == "Spades":
                 self.current_index = i
                 player.set_turn(True)
+
+                self.required_card = players_lowest
+                self.first_move_of_match = True
+
                 print(f"Starter found: {player.get_name()} has the 3 of Spades!")
                 return
 
@@ -51,9 +56,18 @@ class Game:
                 player_with_lowest = i
 
         # If we get here, no one had the 3 of Spades
-        self.current_index = player_with_lowest
-        self.players[self.current_index].set_turn(True)
-        print(f"No 3 of Spades. {self.players[self.current_index].get_name()} starts with {absolute_lowest_card}")
+        if player_with_lowest is not None:
+            self.current_index = player_with_lowest
+            self.players[self.current_index].set_turn(True)
+
+            self.required_card = absolute_lowest_card
+            self.first_move_of_match = True
+            print(f"No 3 of Spades. {self.players[self.current_index].get_name()} starts with {absolute_lowest_card}")
+        else:
+            self.required_card = None
+            self.first_move_of_match = False
+
+        
 
     #turn helpers 
     def current_player(self):
@@ -124,8 +138,15 @@ class Game:
                 # itertools return a tuple => convert it to a list
                 combo = player.hand.make_combo(list(subset))
                 if combo is not None and self.can_play(combo):
-                    playable_hands.append(combo)
-                    
+
+                    #the combo must contain the lowest card
+                    if self.first_move_of_match and self.required_card is not None:
+                        if self.required_card in combo.cards:
+                            playable_hands.append(combo)
+                    else:
+                        # If not first move OR no card required, all valid combos allowed
+                        playable_hands.append(combo)
+                                        
         return playable_hands
 
     def has_valid_move(self, player):
@@ -139,12 +160,19 @@ class Game:
         #Returns (True, message) if played, else (False, reason)
         player = self.current_player()
 
+        # enforces player to start with a combination including the lowest card
+        if self.first_move_of_match:
+            if self.required_card not in selected_cards:
+                return False, f"First move must include {self.required_card}"
+
         combo = player.hand.make_combo(selected_cards)  # use Hand.make_combo -> Combo.make_combo
         if combo is None:
             return False, "Invalid combo"
 
         if not self.can_play(combo):
             return False, "Combo does not beat the current table"
+        
+        self.first_move_of_match = False
 
         # Add hand to play into history
         self.played_cards_history.append(combo)
@@ -203,12 +231,10 @@ class Game:
             return None
 
         #Find the one who played the 2 (called opponent)
-        #Only work for 1 bot + player!!!
-        opponent = None
-        for p in self.players:
-            if p != player:
-                opponent = p
-                break
+        if self.last_player_index is not None:
+            opponent = self.players[self.last_player_index]
+        else:
+            return None
 
         #Determine score change:
         penalty = num_twos * 20

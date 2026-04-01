@@ -41,9 +41,9 @@ class TutorialOverlay:
         self.text_id = self.canvas.create_text(
             0, 0, 
             text=message, 
-            font=("Pixelify Sans", 15, ), 
+            font=("Pixelify Sans", 14, ), 
             fill="black",
-            width=600,     #wrapping     
+            width=500,     #wrapping     
             justify="center",
             anchor="center"
         )
@@ -75,7 +75,7 @@ class TutorialOverlay:
         self.canvas.tag_raise(self.text_id)
         
         # Place the canvas in the center of the screen
-        self.canvas.place(relx=0.5, rely=0.63, anchor="center")
+        self.canvas.place(relx=0.5, rely=0.60, anchor="center")
 
         self.parent.update_idletasks()
         self.is_visible = True

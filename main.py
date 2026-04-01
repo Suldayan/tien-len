@@ -15,9 +15,14 @@ def start_game():
     deck = DECK()
     deck.shuffle()
 
+    # Create players with dealt hands
     user = User("Demo User", Hand(deck.deal(13)))
     bot = Bot("Bot", Hand(deck.deal(13)))
+
+    # game object
     game = Game([user, bot])
+
+    game.set_first_turn()
 
     ui = UI(root, game, deck)
     ui.render_manager.draw()

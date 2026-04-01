@@ -61,10 +61,10 @@ class CARD:
         return self.suit.SuitRank < other.suit.SuitRank
 
     def __eq__(self, other):
-        return (
-            self.rank.value == other.rank.value and
-            self.suit.SuitRank == other.suit.SuitRank
-        )
+        if other is None:
+            return False
+        return (self.rank.value == other.rank.value and 
+                self.suit.name == other.suit.name)
 
     def __str__(self):
         return f"{self.rank} of {self.suit}"

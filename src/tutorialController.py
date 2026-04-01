@@ -19,20 +19,20 @@ class TutorialController:
             if is_first_game_turn and not self.seen_first_turn:
                 self.seen_first_turn = True
                 lowest_card = game_state.get("lowest_card")
-                return f"You get to go first! You must play a combination that includes your lowest card: the {lowest_card}."
+                return f"You get to go first! You must play a combination that includes your lowest card: the {lowest_card}. The hint section on the left includes some of the valid combos for you to look at!"
 
             # SCENARIO 2: User won the last table has control on the turn
             if current_combo == None:
-                return "It's your turn, you can play any combination :) "
+                return "You won the round! You can play any combination"
             # SCENARIO 3: User must play the same combos to beat the table
             else:
-                return "It's your turn, you must play the same kind of combination with higher value, you can look at some of the combos on the left"
+                return "You must play the same kind of combination with higher value, you can look at some of the combos on the left"
         
         # User selecting an invalid play
         elif event == "invalid_play":
-            return "You must play a different card."
+            return "You must play a different combo!."
 
         # Must Pass if user has no valid play
         elif event == "must_pass":
-            return "It's your turn but you have no valid move, you have to pass :( "
+            return "You don't have any valid cards, you must pass to the next player "
         return None 

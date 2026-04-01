@@ -132,8 +132,13 @@ class UI:
         # forced pass
         # If the user has 0 valid moves, tell them to pass
         if len(self.cached_playable_hands) == 0 and self.game.current_combo is not None:
-            self.tutorial_overlay.show("You don't have any valid cards!\n\nYou must pass", dismissible=False)
+            pass_msg = self.tutorial_controller.get_contextual_message({}, "must_pass")
+
+            if pass_msg:
+                self.tutorial_overlay.show(pass_msg, dismissible=False)
+
             return
+        
         # Game state
         user_cards = self.user.hand.get_cards()
         lowest_user_card = min(user_cards) if user_cards else None
@@ -149,7 +154,7 @@ class UI:
         
         # If the table is completely empty, and it isn't the first turn of the game
         if self.game.current_combo is None and len(self.game.played_cards_history) > 0:
-            turn_msg = "You won the round! The table has been cleared.\n\nYou can play any combination."
+            turn_msg = self.tutorial_controller.get_contextual_message({}, "user_turn")
 
         if turn_msg:
             self.tutorial_overlay.show(turn_msg, dismissible=False)
@@ -272,7 +277,7 @@ class UI:
             
             # Show the overlay
             if tutorial_msg:
-                full_error_msg = f"Oops! {message}.\n\n{tutorial_msg}"
+                full_error_msg = f"Oops! {message}. {tutorial_msg}"
                 self.tutorial_overlay.show(full_error_msg, dismissible=False)
             
             # Stop the function so does not advance the turn
