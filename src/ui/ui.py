@@ -60,6 +60,8 @@ class UI:
             on_play=self.play_selected,
             on_pass=self.turn_manager.pass_turn
         )
+        
+        self.controls_frame = self.bottom_frame
 
         # 2. Put user canvas right above the buttons
         self.user_canvas = tk.Canvas(self.bottom_frame, bg="green", highlightthickness=0, bd=0,
