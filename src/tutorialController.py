@@ -30,7 +30,7 @@ class TutorialController:
         
         # User selecting an invalid play
         elif event == "invalid_play":
-            return "You must play a different combo!."
+            return "You must play a valid combination!"
 
         # Must Pass if user has no valid play
         elif event == "must_pass":
