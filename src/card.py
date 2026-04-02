@@ -118,3 +118,11 @@ class CARD:
             fill=color,
             font=(font, size)
         )
+    
+    def card_clicked(self, ui):
+        if ui.is_paused:
+            return
+        if not ui.user.is_turn():
+            return
+        self.toggle_selected()
+        ui.render_manager.draw()

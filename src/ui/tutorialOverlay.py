@@ -1,7 +1,8 @@
 import tkinter as tk
-import pyglet
 
 class TutorialOverlay:
+
+
     def __init__(self, parent_window):
         # parent_window is the main game window
         self.parent = parent_window

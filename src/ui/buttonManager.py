@@ -1,19 +1,32 @@
 import tkinter as tk
 
-class ButtonManager:
-    def __init__(self, parent_frame, on_arrange, on_play, on_pass):
+class BottomLeftButtonManager:
+    def __init__(self, parent_frame, on_pause):
         self.frame = tk.Frame(parent_frame, bg="green")
         self.frame.pack(side="bottom", fill="x", pady=5)
 
-        # using RoundedButton instead of tk.Button
-        self.arrange_btn = RoundedButton(self.frame, text="Arrange", command=on_arrange)
-        self.arrange_btn.pack(side="left", expand=True, padx=5, pady=5)
+        self.pause_btn = RoundedButton(self.frame, text="Pause", command=on_pause)
+        self.pause_btn.pack(side="left", padx=5, pady=5)
+
+class RightSideButtonManager:  
+    def __init__(self, parent_frame, on_play, on_pass):
+        self.frame = tk.Frame(parent_frame, bg="green")
+        self.frame.pack(side="bottom", anchor="center")
 
         self.play_btn = RoundedButton(self.frame, text="Play", command=on_play)
-        self.play_btn.pack(side="left", expand=True, padx=5, pady=5)
+        self.play_btn.pack(side="left", padx=10, pady=10)
 
         self.pass_btn = RoundedButton(self.frame, text="Pass", command=on_pass)
-        self.pass_btn.pack(side="left", expand=True, padx=5, pady=5)
+        self.pass_btn.pack(side="left", padx=10, pady=10)
+
+class LeftSideButtonManager:
+    def __init__(self, parent_frame, on_arrange):
+        self.frame = tk.Frame(parent_frame, bg="green")
+        self.frame.pack(side="bottom", anchor="center", pady=10)
+
+        self.arrange_btn = RoundedButton(self.frame, text="Arrange", command=on_arrange)
+        self.arrange_btn.pack()
+
 
 
 class RoundedButton:

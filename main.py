@@ -6,10 +6,16 @@ from src.hand import Hand
 from src.ui.ui import UI
 from src.game.game import Game
 from src.menu import MenuScreen
+from src.ui.fontLoader import install_font
+
+
+install_font()
+
 
 def start_game():
+    
     # Remove menu
-    menu_frame.pack_forget()
+    menu_frame.destroy()
 
     # Create game
     deck = DECK()
@@ -30,10 +36,11 @@ def start_game():
 def main():
     global root, menu_frame
 
+
     root = tk.Tk()
     root.title("13Game")
     root.geometry("1024x768")
-    root.configure(bg="green")
+    root.configure(bg="#008000")
 
     # Create menu screen
     menu_frame = MenuScreen(root, start_game)

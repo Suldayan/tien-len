@@ -20,7 +20,7 @@ class RenderManager:
         for i, card in enumerate(cards):
             x = start_x + i * (self.ui.CARD_WIDTH + self.ui.CARD_GAP)
             if canvas == self.ui.user_canvas:
-                card.render(canvas, x, y, click_callback=self.ui.card_clicked)
+                card.render(canvas, x, y, click_callback=lambda c=card: c.card_clicked(self.ui))
             else:
                 self.render_back(canvas, x, y)
 
@@ -96,10 +96,10 @@ class RenderManager:
             else:
                 total_group_width = self.ui.CARD_WIDTH
 
-            start_x = (width - total_group_width) // 2
+            start_x = (width - total_group_width) // 2 
             
             # FIX THE VERTICAL: subtract the card height before dividing by 2 to account for the top left anchor
-            start_y = (height - self.ui.CARD_HEIGHT) // 2
+            start_y = (height - self.ui.CARD_HEIGHT) // 2 
 
             for i, card in enumerate(cards):
                 x = start_x + (i * played_card_spacing)

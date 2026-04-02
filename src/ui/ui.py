@@ -8,7 +8,8 @@ from src.ui.render import RenderManager
 from src.ui.gameflow import GameFlow
 from src.ui.tutorialOverlay import TutorialOverlay
 from src.tutorialController import TutorialController
-from src.ui.buttonManager import ButtonManager
+from src.ui.buttonManager import BottomLeftButtonManager, RightSideButtonManager, RoundedButton, LeftSideButtonManager
+
 
 class UI:
     def __init__(self, root, game: Game, deck: DECK):
@@ -23,18 +24,18 @@ class UI:
         self.turn_manager = TurnManager(self) 
         self.render_manager = RenderManager(self)
         self.game_flow_manager = GameFlow(self)
-
-        from src.card import CARD
         
         self.CARD_WIDTH = CARD.WIDTH
         self.CARD_HEIGHT = CARD.HEIGHT
         self.CARD_GAP = -40
 
+        self.is_paused = False 
+
         #cache playable hands to avoid fetch_all_playable_hands being called every second
         self.cached_playable_hands = []
 
         root.configure(bg="green")
-        root.minsize(500, 700) # Increased slightly to give the cards room to breathe
+        root.minsize(1300 , 850 ) # Increased slightly to give the cards room to breathe
 
         # TOP ZONE: Bot 
         self.top_frame = tk.Frame(root, bg="green")
@@ -44,47 +45,119 @@ class UI:
         self.bot_label.pack(pady=10)
 
         self.bot_canvas = tk.Canvas(self.top_frame, bg="green", highlightthickness=0, bd=0,
-                                    height=self.CARD_HEIGHT + 40)
+                                    height=self.CARD_HEIGHT)
         self.bot_canvas.pack(fill="both", expand=True, padx=10)
 
         # BOTTOM ZONE: User & Controls 
         # We pack this BEFORE the middle table so it claims its space at the bottom first!
         self.bottom_frame = tk.Frame(root, bg="green")
-        self.bottom_frame.pack(side="bottom", fill="x", pady=10)
-
-
-        # 1. Put buttons at the very bottom (buttons are from buttonManager.py)
-        self.controls = ButtonManager(
-            parent_frame=self.bottom_frame,
-            on_arrange=self.arrange_cards,
-            on_play=self.play_selected,
-            on_pass=self.turn_manager.pass_turn
-        )
+        self.bottom_frame.pack(side="bottom", fill="x", pady=0)
 
         self.controls_frame = self.bottom_frame
 
-        # 2. Put user canvas right above the buttons
-        self.user_canvas = tk.Canvas(self.bottom_frame, bg="green", highlightthickness=0, bd=0,
-                                     height=self.CARD_HEIGHT + 40)
-        self.user_canvas.pack(fill="both", expand=True, padx=10, pady=(20, 0))
+        self.user_zone = tk.Frame(self.bottom_frame, bg="green")
+        self.user_zone.pack(fill="x", padx=10, pady=(5, 0))
 
-        # 3. Put user label right above their canvas
-        self.user_label = tk.Label(self.bottom_frame, text="", font=("Arial", 20), bg="green", fg="white")
-        self.user_label.pack(side="bottom", pady=(0, 5))
+        #-------------------------PAUSE MENU--------------------------
+        self.pause_menu = tk.Frame(self.root, bg="green")
+
+        self.pause_panel = tk.Frame(self.pause_menu, bg="green")
+        self.pause_panel.place(relx=0.5, rely=0.5, anchor="center")
+
+        self.pause_title = tk.Label(
+            self.pause_panel,
+            text="Pause Menu",
+            font=("Pixelify Sans", 35, "bold"),
+            fg="white",
+            bg="green"
+        )
+        self.pause_title.pack(pady=(0, 25))
+
+        self.resume_menu_button = tk.Button(
+            self.pause_panel,
+            text="Resume",
+            font=("Pixelify Sans", 16),
+            width=18,
+            bg="#e6e6e6",
+            fg="black",
+            command=self.resume_game
+        )
+        self.resume_menu_button.pack(pady=8)
+
+        self.new_game_menu_button = tk.Button(
+            self.pause_panel,
+            text="New Game",
+            font=("Pixelify Sans", 16),
+            width=18,
+            bg="#e6e6e6",
+            fg="black",
+            command=self.pause_menu_new_game
+        )
+        self.new_game_menu_button.pack(pady=8)
+
+        self.quit_menu_button = tk.Button(
+            self.pause_panel,
+            text="Quit",
+            font=("Pixelify Sans", 16),
+            width=18,
+            bg="#e6e6e6",
+            fg="black",
+            command=self.root.destroy
+        )
+        self.quit_menu_button.pack(pady=8)
 
         # MIDDLE ZONE: The Table
         # Because this is packed last with expand=True, it fills the gap between Top and Bottom.
         # A middle container to hold both the Left side-bar and the Main table
-        self.mid_frame = tk.Frame(root, bg="green")
+        self.mid_frame = tk.Frame(root, bg="green", height=400)
         self.mid_frame.pack(fill="both", expand=True)
+
+        # Main table: cards being played here
+        self.table_canvas = tk.Canvas(self.mid_frame, bg="green", highlightthickness=0)
+        self.table_canvas.place(relx=0.0, rely=0, relwidth=1.0, relheight=1.0)
 
         # Left side bar for hint section
         self.hint_canvas = tk.Canvas(self.mid_frame, bg="green", highlightthickness=0)
-        self.hint_canvas.place(relx=0, rely=0, relwidth=0.2, relheight=1.0)
-        # Main table: cards being played here
-        self.table_canvas = tk.Canvas(self.mid_frame, bg="green", highlightthickness=0)
-        self.table_canvas.place(relx=0.2, rely=0, relwidth=0.6, relheight=1.0)
+        self.hint_canvas.place(relx=0, rely=0, relwidth=0.2, relheight=1)
 
+        #-------------------BUTTONS---------------------
+        # Right side bar for Play/Pass buttons
+        self.button_row = tk.Frame(self.user_zone, bg="green", height= 80)
+        self.button_row.pack(fill="x", expand=True)
+        self.button_row.pack_propagate(False)
+
+        self.left_sidebar = tk.Frame(self.button_row, bg="green")
+        self.left_sidebar.pack(side="left", fill="both", expand= True)
+
+        self.right_sidebar = tk.Frame(self.button_row, bg="green")
+        self.right_sidebar.pack(side="right",fill="both", expand= True)
+        
+
+        self.user_canvas = tk.Canvas(self.user_zone, bg="green", highlightthickness=0, bd=0,
+                             height=self.CARD_HEIGHT + 40)
+        self.user_canvas.pack(fill="x")
+
+        # bottom left: Pause
+        self.controls = BottomLeftButtonManager(
+            parent_frame=self.bottom_frame,
+            on_pause=self.toggle_pause
+        )
+
+        self.user_label = tk.Label(self.controls.frame, text="", font=("Arial", 20), bg="green", fg="white")
+        self.user_label.place(relx=0.5, rely=0.5, anchor="center")
+
+        # right sidebar: Play, Pass
+        self.sidebar_controls = RightSideButtonManager(
+            parent_frame=self.right_sidebar,
+            on_play=self.play_selected,
+            on_pass=self.turn_manager.pass_turn
+        )
+
+        #left side bard: Arrange: 
+        self.left_controls = LeftSideButtonManager(
+            parent_frame=self.left_sidebar,
+            on_arrange=self.arrange_cards
+        )
 
         #Show info when 2 is beaten
         self.chop_label = tk.Label(
@@ -109,7 +182,7 @@ class UI:
             pady=12)
 
         # Redraw on resize
-        root.bind("<Configure>", lambda e: (self.auto_scale_cards(), self.render_manager.draw()))
+        root.bind("<Configure>", lambda e: self._on_configure())
         
         # THE KICKSTART 
         # Print to console so you know who the game picked to start
@@ -119,63 +192,6 @@ class UI:
 
         self.render_manager.draw()
 
-        #pause botton
-        self.is_paused = False
-        self.pause_button = tk.Button(
-            self.controls_frame,
-            text="Pause",
-            font=("Arial", 16),
-            command=self.toggle_pause
-        )
-        self.pause_button.pack(side="left", expand=True, padx=5)
-
-        #pause menu
-        self.pause_menu = tk.Frame(self.root, bg="green")
-
-        self.pause_panel = tk.Frame(self.pause_menu, bg="green")
-        self.pause_panel.place(relx=0.5, rely=0.5, anchor="center")
-
-        self.pause_title = tk.Label(
-            self.pause_panel,
-            text="Pause Menu",
-            font=("Arial", 35, "bold"),
-            fg="white",
-            bg="green"
-        )
-        self.pause_title.pack(pady=(0, 25))
-
-        self.resume_menu_button = tk.Button(
-            self.pause_panel,
-            text="Resume",
-            font=("Arial", 16),
-            width=18,
-            bg="#e6e6e6",
-            fg="black",
-            command=self.resume_game
-        )
-        self.resume_menu_button.pack(pady=8)
-
-        self.new_game_menu_button = tk.Button(
-            self.pause_panel,
-            text="New Game",
-            font=("Arial", 16),
-            width=18,
-            bg="#e6e6e6",
-            fg="black",
-            command=self.pause_menu_new_game
-        )
-        self.new_game_menu_button.pack(pady=8)
-
-        self.quit_menu_button = tk.Button(
-            self.pause_panel,
-            text="Quit",
-            font=("Arial", 16),
-            width=18,
-            bg="#e6e6e6",
-            fg="black",
-            command=self.root.destroy
-        )
-        self.quit_menu_button.pack(pady=8)
 
         # ---------------------------------TUTORIAL OVERLAY SECTION---------------------------------
         self.tutorial_overlay = TutorialOverlay(self.root)
@@ -266,19 +282,25 @@ class UI:
     #def draw_hint_card(self, canvas, combo_obj, current_x, current_y, canvas_width, canvas_height): is now in render.py
     #def render_back(self, canvas, x, y): is now in render.py
     def auto_scale_cards(self):
+        try:
+            if not self.user_canvas.winfo_exists():
+                return
+        except tk.TclError:
+            return
+        
         canvas_width = self.user_canvas.winfo_width()
+        if canvas_width <= 1:  #not yet rendered
+            return
+        
         num_cards = len(self.user.get_hand().get_cards())
         if num_cards == 0:
           return
     # Minimum and maximum card sizes 
         MAX_W, MAX_H = 100, 150
         MIN_W, MIN_H = 50, 75
+
     # Compute ideal width so all cards fit
     # take 30% overlap
-        ideal_width = canvas_width / (num_cards * 0.7)
-
-    # Clamp width between min and max
-        # ideal width so all cards fit
         ideal_width = canvas_width / (num_cards * 0.7)
 
         new_width = max(MIN_W, min(MAX_W, ideal_width))
@@ -289,12 +311,22 @@ class UI:
     # Update UI card size
         self.CARD_WIDTH = int(new_width)
         self.CARD_HEIGHT = int(new_height)
-
     # Overlap gap (negative)
         self.CARD_GAP = int(-self.CARD_WIDTH * 0.4)
 
         CARD.WIDTH = self.CARD_WIDTH
         CARD.HEIGHT = self.CARD_HEIGHT
+
+    def _on_configure(self):   
+        try:
+            if not self.user_canvas.winfo_exists():
+                return
+            if not self.bot_label.winfo_exists():
+                return
+            self.auto_scale_cards()
+            self.render_manager.draw()
+        except tk.TclError:
+            return
 
     def update_playable_hands(self):
         if self.user.is_turn():
@@ -375,17 +407,6 @@ class UI:
     #def bot_turn(self): is now in turn.py
     #def advance_turn(self): is now in turn.py
     #def auto_pass(self, player): is now in turn.py
-
-    def card_clicked(self, card):
-        if self.is_paused == True:
-            return
-            
-        if not self.user.is_turn():
-            return
-
-        card.toggle_selected()
-        #print(f"Selected:", card)
-        self.render_manager.draw()
 
     def handle_game_over(self): #do not move this to gameflow.py since tk is not defined there
         message = self.game.round_results()
@@ -484,7 +505,8 @@ class UI:
             return
 
         self.is_paused = True
-        self.pause_button.config(text="Resume")
+        self.controls.pause_btn.canvas.itemconfig(self.controls.pause_btn.text_id, text="Resume")
+
 
         self.tutorial_overlay.hide()
 
@@ -497,7 +519,7 @@ class UI:
             return
 
         self.is_paused = False
-        self.pause_button.config(text="Pause")
+        self.controls.pause_btn.canvas.itemconfig(self.controls.pause_btn.text_id, text="Pause")
 
         self.pause_menu.place_forget()
 
@@ -506,7 +528,7 @@ class UI:
 
     def pause_menu_new_game(self):
         self.is_paused = False
-        self.pause_button.config(text="Pause")
+        self.controls.pause_btn.canvas.itemconfig(self.controls.pause_btn.text_id, text="Pause")  # FIXED
         self.pause_menu.place_forget()
         self.game_flow_manager.reset_game()
         self.start_game_tutorial()
