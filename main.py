@@ -9,7 +9,7 @@ from src.menu import MenuScreen
 from src.ui.fontLoader import install_font
 
 
-install_font("src/assets/PixelifySans-Regular.ttf")
+install_font("src/assets/Perfect DOS VGA 437.ttf")
 
 
 def start_game():

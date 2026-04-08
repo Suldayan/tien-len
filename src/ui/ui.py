@@ -67,7 +67,7 @@ class UI:
         self.pause_title = tk.Label(
             self.pause_panel,
             text="Pause Menu",
-            font=("Pixelify Sans", 35, "bold"),
+            font=("Perfect DOS VGA 437", 40, "bold"),
             fg="white",
             bg="green"
         )
@@ -76,7 +76,7 @@ class UI:
         self.resume_menu_button = tk.Button(
             self.pause_panel,
             text="Resume",
-            font=("Pixelify Sans", 16),
+            font=("Perfect DOS VGA 437", 20, "bold"),
             width=18,
             bg="#e6e6e6",
             fg="black",
@@ -87,7 +87,7 @@ class UI:
         self.new_game_menu_button = tk.Button(
             self.pause_panel,
             text="New Game",
-            font=("Pixelify Sans", 16),
+            font=("Perfect DOS VGA 437", 20, "bold"),
             width=18,
             bg="#e6e6e6",
             fg="black",
@@ -98,7 +98,7 @@ class UI:
         self.quit_menu_button = tk.Button(
             self.pause_panel,
             text="Quit",
-            font=("Pixelify Sans", 16),
+            font=("Perfect DOS VGA 437", 20, "bold"),
             width=18,
             bg="#e6e6e6",
             fg="black",
@@ -118,7 +118,7 @@ class UI:
 
         # Left side bar for hint section
         self.hint_canvas = tk.Canvas(self.mid_frame, bg="green", highlightthickness=0)
-        self.hint_canvas.place(relx=0, rely=0, relwidth=0.2, relheight=1)
+        self.hint_canvas.place(relx=0, rely=0, relwidth=0.2, relheight=0.7)
 
         #-------------------BUTTONS---------------------
         # Right side bar for Play/Pass buttons
@@ -163,7 +163,7 @@ class UI:
         self.chop_label = tk.Label(
             self.table_canvas,
             text="",
-            font=("Arial", 22, "bold"),
+            font=("Perfect DOS VGA 437", 20, "bold"),
             fg="yellow",
             bg="#003300",
             padx=20,
@@ -175,7 +175,7 @@ class UI:
         self.turn_label = tk.Label(
             self.table_canvas,
             text="",
-            font=("Arial", 28, "bold"),
+            font=("Perfect DOS VGA 437", 20, "bold"),
             fg="white",
             bg="#003300",
             padx=25,

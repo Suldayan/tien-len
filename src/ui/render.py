@@ -25,7 +25,7 @@ class RenderManager:
                 self.render_back(canvas, x, y)
 
     def draw_hint_card(self, canvas, combo_obj, current_x, current_y, canvas_width, canvas_height):
-        scale = 0.65
+        scale = 0.75
         mini_w = self.ui.CARD_WIDTH * scale
         mini_h = self.ui.CARD_HEIGHT * scale
         

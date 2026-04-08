@@ -31,9 +31,9 @@ class LeftSideButtonManager:
 
 class RoundedButton:
     # custom Tkinter button with rounded corners using a Canvas
-    def __init__(self, parent, text, command, width=100, height=40, radius=20, 
+    def __init__(self, parent, text, command, width=120, height=40, radius=20, 
                  bg_color="#ffffff", hover_color="#dddddd", text_color="black", 
-                 font=("Pixelify Sans", 20), parent_bg="green", outline_color="black", outline_width=2):
+                 font=("Perfect DOS VGA 437", 20), parent_bg="green", outline_color="black", outline_width=2):
         
         self.command = command
         self.bg_color = bg_color

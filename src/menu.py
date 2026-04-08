@@ -4,46 +4,35 @@ class MenuScreen(tk.Frame):
     def __init__(self, root, start_game_callback):
         super().__init__(root, bg="green")
 
-        # This frame centers everything vertically and horizontally
         container = tk.Frame(self, bg="green")
-        container.place(relx=0.5, rely=0.5, anchor="center")
+        container.place(relx=0.5, rely=0.4, anchor="center")
 
-        # Welcome text slightly above center
         label = tk.Label(
             container,
-            text="Welcome to 13 card tutorial !",
-            font=("Arial", 32),
+            text="13 CARD",
+            font=("Perfect DOS VGA 437", 80, "bold"),
             bg="green",
             fg="white"
         )
-        label.pack(pady=(0, 30))  # push button downward a bit
+        label.pack(pady=(0, 100))  # reasonable gap between title and button
 
-        # New Game button exactly centered
-        button_bg = "#1a1a1a"      # dark charcoal
-        button_fg = "#e6e6e6"      # soft white
-        button_border = "#cccccc"  # light border
-
-        new_game_button = tk.Label(
+        new_game_button = tk.Button(
             container,
             text="NEW GAME",
-            font=("Arial", 22, "bold"),
-            bg=button_bg,
-            fg=button_fg,
+            font=("Perfect DOS VGA 437", 25, "bold"),
+            bg="#1a1a1a",
+            fg="#e6e6e6",
+            activebackground="#333333",
+            activeforeground="white",
             bd=4,
             relief="ridge",
             padx=40,
-            pady=15
+            pady=15,
+            cursor="hand2",         
+            command=start_game_callback
         )
         new_game_button.pack()
 
         # Hover effect
-        def on_enter(e):
-            new_game_button.config(bg="#333333", fg="white", bd=5)
-
-        def on_leave(e):
-            new_game_button.config(bg=button_bg, fg=button_fg, bd=4)
-
-        new_game_button.bind("<Enter>", on_enter)
-        new_game_button.bind("<Leave>", on_leave)
-
-        new_game_button.bind("<Button-1>", lambda e: start_game_callback())
+        new_game_button.bind("<Enter>", lambda e: new_game_button.config(bg="#333333"))
+        new_game_button.bind("<Leave>", lambda e: new_game_button.config(bg="#1a1a1a"))
