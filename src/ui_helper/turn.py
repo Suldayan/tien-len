@@ -42,7 +42,7 @@ class TurnManager:
             self.ui.game.pass_turn()
             self.ui.show_turn_message("Bot passed", 1200)
 
-        self.ui.update_playable_hands()
+        self.ui.actions.update_playable_hands()
         self.ui.render_manager.draw() 
         if self.ui.check_game_over():
             return
@@ -68,7 +68,7 @@ class TurnManager:
         self.ui.root.after(800, show_turn)
 
         #refresh hint when turn changes
-        self.ui.update_playable_hands()
+        self.ui.actions.update_playable_hands()
         self.ui.render_manager.draw()
 
         if current == self.ui.user:

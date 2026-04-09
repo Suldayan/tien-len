@@ -28,13 +28,13 @@ def install_font(src):
         return False
 
     if sys.platform == "win32":
-        # Windows path: C:\Users\<User>\AppData\Local\Microsoft\Windows\Fonts
+        #windows path: C:\Users\<User>\AppData\Local\Microsoft\Windows\Fonts
         dest_dir = os.path.join(os.environ['LOCALAPPDATA'], 'Microsoft', 'Windows', 'Fonts')
     elif sys.platform == "darwin":
-        # macOS path: ~/Library/Fonts
+        # macos path:/Library/Fonts
         dest_dir = os.path.expanduser("~/Library/Fonts")
     else:
-        # Linux path: ~/.local/share/fonts
+        #linux path:/.local/share/fonts
         dest_dir = os.path.expanduser("~/.local/share/fonts")
         
     try:
@@ -42,16 +42,16 @@ def install_font(src):
 
         font_name = os.path.basename(src)
         dest = os.path.join(dest_dir, font_name)
-        shutil.copy2(src, dest)  # copy2 preserves metadata
+        shutil.copy2(src, dest)
 
-        # Windows: register font in the registry so apps can discover it
+        # Windows: register font in the registry
         if sys.platform == "win32":
             import winreg
             key_path = r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"
             with winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_SET_VALUE) as key:
                 winreg.SetValueEx(key, font_name, 0, winreg.REG_SZ, dest)
 
-        # Linux: refresh font cache so the font is immediately available
+        # Linux: refresh font cache
         elif sys.platform not in ("win32", "darwin"):
             subprocess.run(["fc-cache", "-f", dest_dir], check=False)
 

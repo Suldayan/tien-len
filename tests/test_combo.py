@@ -1,7 +1,7 @@
-from src.combo import is_straight, is_triple, is_pair, is_four_of_a_kind
-from src.card import CARD
-from src.rank import RANK
-from src.suit import SUIT
+from src.core.combo import is_straight, is_triple, is_pair, is_four_of_a_kind
+from src.core.card import CARD
+from src.core.rank import RANK
+from src.core.suit import SUIT
 
 def make_card(suit, suit_val, suit_sym, rank, rank_val, rank_sym):
     return CARD(SUIT(suit, suit_val, suit_sym), RANK(rank, rank_val, rank_sym))

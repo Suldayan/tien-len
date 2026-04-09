@@ -1,8 +1,8 @@
-from src.card import CARD
-from src.suit import SUIT
-from src.rank import RANK
-from src.combo import Combo
-from src.combo import make_combo
+from src.core.card import CARD
+from src.core.suit import SUIT
+from src.core.rank import RANK
+from src.core.combo import Combo
+from src.core.combo import make_combo
 def can_play(pot, combo: Combo):
         """
         Very basic rule:

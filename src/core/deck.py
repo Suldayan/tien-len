@@ -1,6 +1,6 @@
-from src.card import CARD
-from src.rank import RANK
-from src.suit import SUIT
+from src.core.card import CARD
+from src.core.rank import RANK
+from src.core.suit import SUIT
 import random
 
 #just added some shuffle functions and deal function to this deck class
