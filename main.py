@@ -40,7 +40,7 @@ def main():
     root = tk.Tk()
     root.title("13Game")
     root.geometry("1024x768")
-    root.configure(bg="#008000")
+    root.configure(bg = "#14532d")
 
     # Create menu screen
     menu_frame = MenuScreen(root, start_game)

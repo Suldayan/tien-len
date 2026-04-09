@@ -2,16 +2,16 @@ import tkinter as tk
 
 class MenuScreen(tk.Frame):
     def __init__(self, root, start_game_callback):
-        super().__init__(root, bg="green")
+        super().__init__(root, bg = "#14532d")
 
-        container = tk.Frame(self, bg="green")
+        container = tk.Frame(self, bg = "#14532d")
         container.place(relx=0.5, rely=0.4, anchor="center")
 
         label = tk.Label(
             container,
             text="13 CARD",
             font=("Perfect DOS VGA 437", 80, "bold"),
-            bg="green",
+            bg = "#14532d",
             fg="white"
         )
         label.pack(pady=(0, 100))  # reasonable gap between title and button

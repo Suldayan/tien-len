@@ -8,7 +8,7 @@ class TutorialOverlay:
         self.parent = parent_window
         
 
-        self.canvas = tk.Canvas(self.parent, bg="green", highlightthickness=0)
+        self.canvas = tk.Canvas(self.parent, bg = "#14532d", highlightthickness=0)
         self.rect_id = None
         self.text_id = None
 

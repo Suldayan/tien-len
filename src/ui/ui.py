@@ -34,34 +34,35 @@ class UI:
         #cache playable hands to avoid fetch_all_playable_hands being called every second
         self.cached_playable_hands = []
 
-        root.configure(bg="green")
+        MainBG = "#14532d"
+        root.configure(bg = MainBG)
         root.minsize(1300 , 850 ) # Increased slightly to give the cards room to breathe
 
         # TOP ZONE: Bot 
-        self.top_frame = tk.Frame(root, bg="green")
+        self.top_frame = tk.Frame(root, bg = MainBG)
         self.top_frame.pack(side="top", fill="x")
         
-        self.bot_label = tk.Label(self.top_frame, text="", font=("Arial", 20), bg="green", fg="white")
+        self.bot_label = tk.Label(self.top_frame, text="", font=("Perfect DOS VGA 437", 20), bg = MainBG, fg="white")
         self.bot_label.pack(pady=10)
 
-        self.bot_canvas = tk.Canvas(self.top_frame, bg="green", highlightthickness=0, bd=0,
+        self.bot_canvas = tk.Canvas(self.top_frame, bg = MainBG, highlightthickness=0, bd=0,
                                     height=self.CARD_HEIGHT)
         self.bot_canvas.pack(fill="both", expand=True, padx=10)
 
         # BOTTOM ZONE: User & Controls 
         # We pack this BEFORE the middle table so it claims its space at the bottom first!
-        self.bottom_frame = tk.Frame(root, bg="green")
+        self.bottom_frame = tk.Frame(root, bg = MainBG)
         self.bottom_frame.pack(side="bottom", fill="x", pady=0)
 
         self.controls_frame = self.bottom_frame
 
-        self.user_zone = tk.Frame(self.bottom_frame, bg="green")
+        self.user_zone = tk.Frame(self.bottom_frame, bg = MainBG)
         self.user_zone.pack(fill="x", padx=10, pady=(5, 0))
 
         #-------------------------PAUSE MENU--------------------------
-        self.pause_menu = tk.Frame(self.root, bg="green")
+        self.pause_menu = tk.Frame(self.root, bg = MainBG)
 
-        self.pause_panel = tk.Frame(self.pause_menu, bg="green")
+        self.pause_panel = tk.Frame(self.pause_menu, bg = MainBG)
         self.pause_panel.place(relx=0.5, rely=0.5, anchor="center")
 
         self.pause_title = tk.Label(
@@ -69,7 +70,7 @@ class UI:
             text="Pause Menu",
             font=("Perfect DOS VGA 437", 40, "bold"),
             fg="white",
-            bg="green"
+            bg = MainBG
         )
         self.pause_title.pack(pady=(0, 25))
 
@@ -109,31 +110,31 @@ class UI:
         # MIDDLE ZONE: The Table
         # Because this is packed last with expand=True, it fills the gap between Top and Bottom.
         # A middle container to hold both the Left side-bar and the Main table
-        self.mid_frame = tk.Frame(root, bg="green", height=400)
+        self.mid_frame = tk.Frame(root, bg = MainBG, height=400)
         self.mid_frame.pack(fill="both", expand=True)
 
         # Main table: cards being played here
-        self.table_canvas = tk.Canvas(self.mid_frame, bg="green", highlightthickness=0)
+        self.table_canvas = tk.Canvas(self.mid_frame, bg = MainBG, highlightthickness=0)
         self.table_canvas.place(relx=0.0, rely=0, relwidth=1.0, relheight=1.0)
 
         # Left side bar for hint section
-        self.hint_canvas = tk.Canvas(self.mid_frame, bg="green", highlightthickness=0)
+        self.hint_canvas = tk.Canvas(self.mid_frame, bg = MainBG, highlightthickness=0)
         self.hint_canvas.place(relx=0, rely=0, relwidth=0.2, relheight=0.7)
 
         #-------------------BUTTONS---------------------
         # Right side bar for Play/Pass buttons
-        self.button_row = tk.Frame(self.user_zone, bg="green", height= 80)
+        self.button_row = tk.Frame(self.user_zone, bg = MainBG, height= 80)
         self.button_row.pack(fill="x", expand=True)
         self.button_row.pack_propagate(False)
 
-        self.left_sidebar = tk.Frame(self.button_row, bg="green")
+        self.left_sidebar = tk.Frame(self.button_row, bg = MainBG)
         self.left_sidebar.pack(side="left", fill="both", expand= True)
 
-        self.right_sidebar = tk.Frame(self.button_row, bg="green")
+        self.right_sidebar = tk.Frame(self.button_row, bg = MainBG)
         self.right_sidebar.pack(side="right",fill="both", expand= True)
         
 
-        self.user_canvas = tk.Canvas(self.user_zone, bg="green", highlightthickness=0, bd=0,
+        self.user_canvas = tk.Canvas(self.user_zone, bg = MainBG, highlightthickness=0, bd=0,
                              height=self.CARD_HEIGHT + 40)
         self.user_canvas.pack(fill="x")
 
@@ -143,7 +144,7 @@ class UI:
             on_pause=self.toggle_pause
         )
 
-        self.user_label = tk.Label(self.controls.frame, text="", font=("Arial", 20), bg="green", fg="white")
+        self.user_label = tk.Label(self.controls.frame, text="", font=("Perfect DOS VGA 437", 20), bg = MainBG, fg="white")
         self.user_label.place(relx=0.5, rely=0.5, anchor="center")
 
         # right sidebar: Play, Pass
@@ -278,9 +279,6 @@ class UI:
         self.bot_label.config(text=f"{self.bot.get_name()}: {self.bot.get_points()} pts")
         self.user_label.config(text=f"{self.user.get_name()}: {self.user.get_points()} pts")
 
-    #def draw_cards(self, canvas, cards): is now in render.py
-    #def draw_hint_card(self, canvas, combo_obj, current_x, current_y, canvas_width, canvas_height): is now in render.py
-    #def render_back(self, canvas, x, y): is now in render.py
     def auto_scale_cards(self):
         try:
             if not self.user_canvas.winfo_exists():
@@ -299,8 +297,7 @@ class UI:
         MAX_W, MAX_H = 100, 150
         MIN_W, MIN_H = 50, 75
 
-    # Compute ideal width so all cards fit
-    # take 30% overlap
+    # Compute ideal width so all cards fit, take 30% overlap
         ideal_width = canvas_width / (num_cards * 0.7)
 
         new_width = max(MIN_W, min(MAX_W, ideal_width))
@@ -333,8 +330,6 @@ class UI:
             self.cached_playable_hands = self.game.fetch_all_playable_hands(self.user)
         else:
             self.cached_playable_hands = []
-
-    #def draw(self): is now in render.py
 
     # Arrange button function
     def arrange_cards(self):
@@ -403,11 +398,6 @@ class UI:
         
         self.root.after(1200, self.turn_manager.advance_turn)
     
-    #def pass_turn(self): is now in turn.py
-    #def bot_turn(self): is now in turn.py
-    #def advance_turn(self): is now in turn.py
-    #def auto_pass(self, player): is now in turn.py
-
     def handle_game_over(self): #do not move this to gameflow.py since tk is not defined there
         message = self.game.round_results()
         self.render_manager.draw()
@@ -415,24 +405,24 @@ class UI:
         popup = tk.Toplevel(self.root)
         popup.title("Round Finished")
         popup.geometry("350x300")
-        popup.configure(bg="green")
+        popup.configure( bg = "#14532d")
 
         label = tk.Label(
             popup,
             text=message,
-            font=("Arial", 14),
-            bg="green",
+            font=("Perfect DOS VGA 437", 14),
+            bg = "#14532d",
             fg="white",
             justify="center")
         label.pack(pady=20)
 
-        button_frame = tk.Frame(popup, bg="green")
+        button_frame = tk.Frame(popup, bg = "#14532d")
         button_frame.pack(pady=10)
 
         continue_btn = tk.Button(
             button_frame,
             text="Continue match",
-            font=("Arial", 12),
+            font=("Perfect DOS VGA 437", 12),
             command=lambda: self.game_flow_manager.continue_match(popup)
         )
         continue_btn.pack(fill="x", pady=5)
@@ -440,7 +430,7 @@ class UI:
         new_game_btn = tk.Button(
             button_frame,
             text="New game",
-            font=("Arial", 12),
+            font=("Perfect DOS VGA 437", 12),
             command=lambda: self.game_flow_manager.new_game(popup)
         )
         new_game_btn.pack(fill="x", pady=5)
@@ -448,7 +438,7 @@ class UI:
         exit_btn = tk.Button(
             button_frame,
             text="Exit",
-            font=("Arial", 12),
+            font=("Perfect DOS VGA 437", 12),
             command=self.root.destroy
         )
         exit_btn.pack(fill="x", pady=5)
@@ -489,10 +479,6 @@ class UI:
             self.handle_game_over()
             return True
         return False
-
-    #def reset_game(self): is now in game_dialog.py
-    #def continue_match(self, popup): is now in game_dialog.py
-    #def new_game(self, popup): is now in game_dialog.py
 
     def toggle_pause(self):
         if self.is_paused == True:
