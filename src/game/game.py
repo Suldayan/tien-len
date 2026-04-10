@@ -81,7 +81,7 @@ class Game:
     #round helpers
     #def start_new_round(self, starter_index=None): is now in round.py
     def start_new_round(self, starter_index=None):
-        return start_new_round_impl(self, starter_index=None)
+        return start_new_round_impl(self, starter_index)
 
     #def pass_turn(self): is now in round.py
     def pass_turn(self):
