@@ -5,7 +5,6 @@ from src.core.rank import RANK
 from src.core.combo import make_combo
 from src.game.validateplay import can_play
 
-
 class MockGame:
     def __init__(self, current_combo):
         self.current_combo = current_combo
@@ -82,9 +81,6 @@ def five_pair_double_straight(spades, diamonds):
         for rank in ranks
         for card in [CARD(spades, rank), CARD(diamonds, rank)]
     ])
-
-
-# --- Tests ---
 
 class TestEmptyPot:
     def test_any_combo_allowed_when_pot_is_none(self, empty_pot, spades):
