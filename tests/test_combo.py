@@ -3,46 +3,73 @@ from src.core.card import CARD
 from src.core.rank import RANK
 from src.core.suit import SUIT
 
-def make_card(suit, suit_val, suit_sym, rank, rank_val, rank_sym):
-    return CARD(SUIT(suit, suit_val, suit_sym), RANK(rank, rank_val, rank_sym))
+def make_card(suit, suit_rank, suit_sym, suit_code, rank, rank_val, rank_sym):
+    return CARD(SUIT(suit, suit_rank, suit_sym, suit_code), RANK(rank, rank_val, rank_sym))
 
-def test_straight():
-    c1 = make_card("Spades", 1, "♠", "THREE", 1, "3")
-    c2 = make_card("Spades", 1, "♠", "FOUR", 2, "4")
-    c3 = make_card("Spades", 1, "♠", "FIVE", 3, "5")
-    print("Straight test:", is_straight([c1, c2, c3]))
+class TestIsStraight:
+    def test_three_card_straight(self):
+        cards = [
+            make_card("Spades", 1, "♠", "S", "THREE", 1, "3"),
+            make_card("Spades", 1, "♠", "S", "FOUR",  2, "4"),
+            make_card("Spades", 1, "♠", "S", "FIVE",  3, "5"),
+        ]
+        assert is_straight(cards) is True
 
-def test_triple():
-    c1 = make_card("Hearts", 4, "♥", "QUEEN", 10, "Q")
-    c2 = make_card("Spades", 1, "♠", "QUEEN", 10, "Q")
-    c3 = make_card("Diamonds", 3, "♦", "QUEEN", 10, "Q")
-    print("Triple test:", is_triple([c1, c2, c3]))
+    def test_non_consecutive_is_not_straight(self):
+        cards = [
+            make_card("Spades", 1, "♠", "S", "THREE", 1, "3"),
+            make_card("Spades", 1, "♠", "S", "FOUR",  2, "4"),
+            make_card("Spades", 1, "♠", "S", "SIX",   4, "6"),
+        ]
+        assert is_straight(cards) is False
 
-def test_pair():
-    c1 = make_card("Clubs", 2, "♣", "QUEEN", 10, "Q")
-    c2 = make_card("Diamonds", 3, "♦", "QUEEN", 10, "Q")
-    print("Pair test:", is_pair([c1, c2]))
+class TestIsTriple:
+    def test_three_queens_is_triple(self):
+        cards = [
+            make_card("Hearts",   4, "♥", "H", "QUEEN", 10, "Q"),
+            make_card("Spades",   1, "♠", "S", "QUEEN", 10, "Q"),
+            make_card("Diamonds", 3, "♦", "D", "QUEEN", 10, "Q"),
+        ]
+        assert is_triple(cards) is True
 
-def test_four_of_a_kind():
-    c1 = make_card("Diamonds", 3, "♦", "QUEEN", 10, "Q")
-    c2 = make_card("Clubs", 2, "♣", "QUEEN", 10, "Q")
-    c3 = make_card("Spades", 1, "♠", "QUEEN", 10, "Q")
-    c4 = make_card("Hearts", 4, "♥", "QUEEN", 10, "Q")
-    print("Four of a kind test:", is_four_of_a_kind([c1, c2, c3, c4]))
+    def test_mixed_ranks_is_not_triple(self):
+        cards = [
+            make_card("Hearts",   4, "♥", "H", "QUEEN", 10, "Q"),
+            make_card("Spades",   1, "♠", "S", "QUEEN", 10, "Q"),
+            make_card("Diamonds", 3, "♦", "D", "KING",  11, "K"),
+        ]
+        assert is_triple(cards) is False
 
-def main():
-    """
-    To run the test, make sure you are in the project root directory (TienLen).
-    On Windows:
-        python -m tests.test_combo
-    On macOS / Linux:
-        python3 -m tests.test_combo
-    """
+class TestIsPair:
+    def test_two_queens_is_pair(self):
+        cards = [
+            make_card("Clubs",    2, "♣", "C", "QUEEN", 10, "Q"),
+            make_card("Diamonds", 3, "♦", "D", "QUEEN", 10, "Q"),
+        ]
+        assert is_pair(cards) is True
 
-    test_straight()
-    test_triple()
-    test_pair()
-    test_four_of_a_kind()
+    def test_different_ranks_is_not_pair(self):
+        cards = [
+            make_card("Clubs",    2, "♣", "C", "QUEEN", 10, "Q"),
+            make_card("Diamonds", 3, "♦", "D", "KING",  11, "K"),
+        ]
+        assert is_pair(cards) is False
 
-if __name__ == "__main__":
-    main()
+class TestIsFourOfAKind:
+    def test_four_queens_is_four_of_a_kind(self):
+        cards = [
+            make_card("Diamonds", 3, "♦", "D", "QUEEN", 10, "Q"),
+            make_card("Clubs",    2, "♣", "C", "QUEEN", 10, "Q"),
+            make_card("Spades",   1, "♠", "S", "QUEEN", 10, "Q"),
+            make_card("Hearts",   4, "♥", "H", "QUEEN", 10, "Q"),
+        ]
+        assert is_four_of_a_kind(cards) is True
+
+    def test_three_of_a_kind_is_not_four_of_a_kind(self):
+        cards = [
+            make_card("Diamonds", 3, "♦", "D", "QUEEN", 10, "Q"),
+            make_card("Clubs",    2, "♣", "C", "QUEEN", 10, "Q"),
+            make_card("Spades",   1, "♠", "S", "QUEEN", 10, "Q"),
+            make_card("Hearts",   4, "♥", "H", "KING",  11, "K"),
+        ]
+        assert is_four_of_a_kind(cards) is False
