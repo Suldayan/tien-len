@@ -8,7 +8,7 @@ class TutorialOverlay:
         self.parent = parent_window
         
 
-        self.canvas = tk.Canvas(self.parent, bg="green", highlightthickness=0)
+        self.canvas = tk.Canvas(self.parent, bg = "#14532d", highlightthickness=0)
         self.rect_id = None
         self.text_id = None
 
@@ -42,9 +42,9 @@ class TutorialOverlay:
         self.text_id = self.canvas.create_text(
             0, 0, 
             text=message, 
-            font=("Pixelify Sans", 14, ), 
+            font=("Perfect DOS VGA 437", 18, ), 
             fill="black",
-            width=500,     #wrapping     
+            width=700,     #wrapping     
             justify="center",
             anchor="center"
         )

@@ -1,8 +1,8 @@
 #the reason that game.py uses helper function is because game.py only do one thing
 #in ui.py, using class is much more cleaner since each class has a specific job
 import itertools
-from src.player import Player
-from src.combo import Combo
+from src.core.player import Player
+from src.core.combo import Combo
 from src.game.validateplay import can_play as can_play_impl
 from src.game.round import start_new_round as start_new_round_impl
 from src.game.round import pass_turn as pass_turn_impl
