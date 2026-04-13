@@ -1,4 +1,4 @@
-from src.hand import Hand
+from src.core.hand import Hand
 
 class Player:
     def __init__(self, name, hand: Hand, points=0):
@@ -12,6 +12,9 @@ class Player:
     
     def get_hand(self):
         return self.hand
+    
+    def get_turn(self):
+        return self.turn
     
     def get_points(self):
         return self.points

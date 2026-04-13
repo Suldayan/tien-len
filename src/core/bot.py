@@ -1,4 +1,4 @@
-from src.player import Player
+from src.core.player import Player
 
 class Bot(Player):
     def __init__(self, name, hand=None, points=0):

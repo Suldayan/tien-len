@@ -2,7 +2,7 @@ import tkinter as tk
 
 class BottomLeftButtonManager:
     def __init__(self, parent_frame, on_pause):
-        self.frame = tk.Frame(parent_frame, bg="green")
+        self.frame = tk.Frame(parent_frame, bg = "#14532d")
         self.frame.pack(side="bottom", fill="x", pady=5)
 
         self.pause_btn = RoundedButton(self.frame, text="Pause", command=on_pause)
@@ -10,7 +10,7 @@ class BottomLeftButtonManager:
 
 class RightSideButtonManager:  
     def __init__(self, parent_frame, on_play, on_pass):
-        self.frame = tk.Frame(parent_frame, bg="green")
+        self.frame = tk.Frame(parent_frame, bg = "#14532d")
         self.frame.pack(side="bottom", anchor="center")
 
         self.play_btn = RoundedButton(self.frame, text="Play", command=on_play)
@@ -21,19 +21,17 @@ class RightSideButtonManager:
 
 class LeftSideButtonManager:
     def __init__(self, parent_frame, on_arrange):
-        self.frame = tk.Frame(parent_frame, bg="green")
+        self.frame = tk.Frame(parent_frame, bg = "#14532d")
         self.frame.pack(side="bottom", anchor="center", pady=10)
 
         self.arrange_btn = RoundedButton(self.frame, text="Arrange", command=on_arrange)
         self.arrange_btn.pack()
 
-
-
 class RoundedButton:
     # custom Tkinter button with rounded corners using a Canvas
-    def __init__(self, parent, text, command, width=100, height=40, radius=20, 
+    def __init__(self, parent, text, command, width=120, height=40, radius=20, 
                  bg_color="#ffffff", hover_color="#dddddd", text_color="black", 
-                 font=("Pixelify Sans", 20), parent_bg="green", outline_color="black", outline_width=2):
+                 font=("Perfect DOS VGA 437", 20), parent_bg = "#14532d", outline_color="black", outline_width=2):
         
         self.command = command
         self.bg_color = bg_color
@@ -51,10 +49,13 @@ class RoundedButton:
         self.text_id = self.canvas.create_text(width/2, height/2, text=text, fill=text_color, font=font)
         
         # bind events for clicking
-        self.canvas.bind("<Button-1>", self.on_click)
         self.canvas.bind("<Enter>", self.on_hover)
         self.canvas.bind("<Leave>", self.on_leave)
-        
+
+        self.canvas.tag_bind(self.rect_id, "<Button-1>", self.on_click)
+        self.canvas.tag_bind(self.rect_id, "<Enter>", self.on_hover)
+        self.canvas.tag_bind(self.rect_id, "<Leave>", self.on_leave)
+
         # bind clicking on the text itself
         self.canvas.tag_bind(self.text_id, "<Button-1>", self.on_click)
 

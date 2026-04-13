@@ -1,4 +1,4 @@
-from src.player import Player
+from src.core.player import Player
 
 class User(Player):
     def __init__(self, name, hand, points=0):

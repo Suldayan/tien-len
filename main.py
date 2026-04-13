@@ -1,15 +1,15 @@
 import tkinter as tk
-from src.deck import DECK
-from src.user import User
-from src.bot import Bot
-from src.hand import Hand
+from src.core.deck import DECK
+from src.core.user import User
+from src.core.bot import Bot
+from src.core.hand import Hand
 from src.ui.ui import UI
 from src.game.game import Game
-from src.menu import MenuScreen
-from src.ui.fontLoader import install_font
+from src.core.menu import MenuScreen
+from src.ui_helper.fontLoader import install_font
 
 
-install_font("src/assets/PixelifySans-Regular.ttf")
+install_font("src/assets/Perfect DOS VGA 437.ttf")
 
 
 def start_game():
@@ -40,7 +40,7 @@ def main():
     root = tk.Tk()
     root.title("13Game")
     root.geometry("1024x768")
-    root.configure(bg="#008000")
+    root.configure(bg = "#14532d")
 
     # Create menu screen
     menu_frame = MenuScreen(root, start_game)

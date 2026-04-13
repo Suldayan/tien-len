@@ -1,5 +1,5 @@
-from src.card import CARD
-from src.combo import make_combo
+from src.core.card import CARD
+from src.core.combo import make_combo
 
 class Hand:
     def __init__(self, cards: list[CARD]):

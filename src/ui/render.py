@@ -1,3 +1,4 @@
+
 class RenderManager:
     def __init__(self, ui):
         self.ui = ui
@@ -25,7 +26,7 @@ class RenderManager:
                 self.render_back(canvas, x, y)
 
     def draw_hint_card(self, canvas, combo_obj, current_x, current_y, canvas_width, canvas_height):
-        scale = 0.65
+        scale = 0.75
         mini_w = self.ui.CARD_WIDTH * scale
         mini_h = self.ui.CARD_HEIGHT * scale
         
@@ -53,19 +54,19 @@ class RenderManager:
 
     def draw(self):
         self.ui.update_player_info()
-        self.draw_cards(self.ui.bot_canvas, self.ui.bot.get_hand().get_cards())
-        self.draw_cards(self.ui.user_canvas, self.ui.user.get_hand().get_cards())
+        self.draw_cards(self.ui.layout.bot_canvas, self.ui.bot.get_hand().get_cards())
+        self.draw_cards(self.ui.layout.user_canvas, self.ui.user.get_hand().get_cards())
         #fixed: always clear the middle table before redrawing
-        self.ui.table_canvas.delete("all")
-        self.ui.hint_canvas.delete("all")
+        self.ui.layout.table_canvas.delete("all")
+        self.ui.layout.hint_canvas.delete("all")
 
         #get all the playable hands from Game class's function "fectch_all_playable_hands"
         playable_hands = self.ui.cached_playable_hands
 
 
-        self.ui.hint_canvas.update_idletasks()
-        c_width = self.ui.hint_canvas.winfo_width()
-        c_height = self.ui.hint_canvas.winfo_height()
+        self.ui.layout.hint_canvas.update_idletasks()
+        c_width = self.ui.layout.hint_canvas.winfo_width()
+        c_height = self.ui.layout.hint_canvas.winfo_height()
         if c_width <= 1: c_width = 180 # Fallback for startup
         
         scale = 0.65
@@ -74,7 +75,7 @@ class RenderManager:
 
         for hand in playable_hands:
             # pass the positions and get to the updated ones
-            result = self.draw_hint_card(self.ui.hint_canvas, hand, h_x, h_y, c_width, c_height)
+            result = self.draw_hint_card(self.ui.layout.hint_canvas, hand, h_x, h_y, c_width, c_height)
 
             if result == (None, None):
                 break
@@ -82,10 +83,10 @@ class RenderManager:
             h_x, h_y = result
 
         if self.ui.game.current_combo:
-            self.ui.table_canvas.update_idletasks()
+            self.ui.layout.table_canvas.update_idletasks()
 
-            width = self.ui.table_canvas.winfo_width()
-            height = self.ui.table_canvas.winfo_height()
+            width = self.ui.layout.table_canvas.winfo_width()
+            height = self.ui.layout.table_canvas.winfo_height()
 
             cards = self.ui.game.current_combo.cards
             played_card_spacing = 60
@@ -104,11 +105,11 @@ class RenderManager:
             for i, card in enumerate(cards):
                 x = start_x + (i * played_card_spacing)
                 # Pass the corrected start_y instead of center_y
-                card.render(self.ui.table_canvas, x, start_y)
+                card.render(self.ui.layout.table_canvas, x, start_y)
 
 
     def render_back(self, canvas, x, y, width=None):
-        from src.card import CARD
+        from src.core.card import CARD
         # dynamic width
         w = int(width) if width else CARD.WIDTH
         

@@ -1,9 +1,6 @@
-from src.suit import SUIT
-from src.rank import RANK
+from src.core.suit import SUIT
+from src.core.rank import RANK
 from PIL import Image, ImageTk
-import os
-
-
 
 class CARD:
     WIDTH = 100
