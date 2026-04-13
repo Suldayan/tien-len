@@ -27,8 +27,6 @@ class LeftSideButtonManager:
         self.arrange_btn = RoundedButton(self.frame, text="Arrange", command=on_arrange)
         self.arrange_btn.pack()
 
-
-
 class RoundedButton:
     # custom Tkinter button with rounded corners using a Canvas
     def __init__(self, parent, text, command, width=120, height=40, radius=20, 
@@ -51,10 +49,13 @@ class RoundedButton:
         self.text_id = self.canvas.create_text(width/2, height/2, text=text, fill=text_color, font=font)
         
         # bind events for clicking
-        self.canvas.bind("<Button-1>", self.on_click)
         self.canvas.bind("<Enter>", self.on_hover)
         self.canvas.bind("<Leave>", self.on_leave)
-        
+
+        self.canvas.tag_bind(self.rect_id, "<Button-1>", self.on_click)
+        self.canvas.tag_bind(self.rect_id, "<Enter>", self.on_hover)
+        self.canvas.tag_bind(self.rect_id, "<Leave>", self.on_leave)
+
         # bind clicking on the text itself
         self.canvas.tag_bind(self.text_id, "<Button-1>", self.on_click)
 
