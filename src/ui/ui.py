@@ -532,3 +532,13 @@ class UI:
         self.pause_menu.place_forget()
         self.game_flow_manager.reset_game()
         self.start_game_tutorial()
+
+    def on_card_clicked(self, card):
+        if self.is_paused:
+            return
+
+        if not self.user.is_turn():
+            return
+
+        card.toggle_selected()
+        self.render_manager.draw()
