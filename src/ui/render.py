@@ -20,8 +20,8 @@ class RenderManager:
 
         for i, card in enumerate(cards):
             x = start_x + i * (self.ui.CARD_WIDTH + self.ui.CARD_GAP)
-            if canvas == self.ui.layout.user_canvas:
-                card.render(canvas, x, y, click_callback=lambda c=card: c.card_clicked(self.ui))
+            if canvas == self.ui.user_canvas:
+                card.render(canvas, x, y, click_callback=self.ui.on_card_clicked)
             else:
                 self.render_back(canvas, x, y)
 
